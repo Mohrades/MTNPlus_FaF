@@ -2,80 +2,275 @@ package product;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Locale;
+import org.springframework.context.MessageSource;
 
 import connexions.AIRRequest;
 import dao.DAO;
 import dao.queries.RollBackDAOJdbc;
-import dao.queries.SharingDAOJdbc;
 import domain.models.RollBack;
-import domain.models.Sharing;
+import util.AccountDetails;
 import util.BalanceAndDate;
 import util.DedicatedAccount;
+import util.ServiceOfferings;
 
 public class ProductActions {
-	
+
 	public ProductActions() {
-		
+
 	}
 
-	@SuppressWarnings("deprecation")
-	public boolean doActions(ProductProperties productProperties, DAO dao, String Anumber, String Bnumber, int choice) {
+	public String getInfo(MessageSource i18n, ProductProperties productProperties, String msisdn) {
+		AccountDetails accountDetails = getAccountDetails(new AIRRequest(), msisdn);
+		int language = (accountDetails == null) ? 1 : accountDetails.getLanguageIDCurrent();
+
+		return i18n.getMessage("info", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH);
+	}
+
+	public int isActivated(ProductProperties productProperties, DAO dao, String msisdn) {
 		try {
-			long volume_data = 0;
+			AIRRequest request = new AIRRequest();
 
-			try {
-				volume_data = Long.parseLong(productProperties.getData_volume().get(choice-1));
+			if((productProperties.getOffer_id() == 0) || (!(request.getOffers(msisdn, new int[][] {{productProperties.getOffer_id(), productProperties.getOffer_id()}}, false, null, false).isEmpty()))) {
+				if(productProperties.getServiceOfferings_IDs() != null) {
+					AccountDetails accountDetails = getAccountDetails(request, msisdn);
 
-			} catch(NullPointerException|NumberFormatException ex) {
+					if(accountDetails == null) {
+						if(request.isSuccessfully()) return 1;
+						else return -1;
+					}
+					else {
+						ServiceOfferings serviceOfferings = accountDetails.getServiceOfferings();
 
-			} catch(Exception ex) {
+						serviceOfferings = accountDetails.getServiceOfferings();
+						int size = productProperties.getServiceOfferings_IDs().size();
 
-			} catch(Throwable th) {
+						for(int index = 0; index < size; index++) {
+							int serviceOfferingID = Integer.parseInt(productProperties.getServiceOfferings_IDs().get(index));
+							boolean activeFlag = (Integer.parseInt(productProperties.getServiceOfferings_activeFlags().get(index)) == 1) ? true : false;
 
-			}
+							if((activeFlag && !serviceOfferings.isActiveFlag(serviceOfferingID)) || (!activeFlag && serviceOfferings.isActiveFlag(serviceOfferingID))) {
+								return 1;
+							}
+						}
 
-			// do action only if volume_data is strictly positive
-			if(volume_data <= 0) return false;
-
-			HashSet<BalanceAndDate> balances = new HashSet<BalanceAndDate>();
-			if((int) productProperties.getAnumber_da() == 0) balances.add(new BalanceAndDate((int) productProperties.getAnumber_da(), -volume_data, null));
-			else balances.add(new DedicatedAccount((int) productProperties.getAnumber_da(), -volume_data, null));
-
-			// update Anumber Balance
-			if(new AIRRequest().updateBalanceAndDate(Anumber, balances, "TEST", "TEST", "eBA")) {
-				balances.clear();
-				Date expires = new Date();
-				expires.setSeconds(59);expires.setMinutes(59);expires.setHours(23);expires.setDate(31);expires.setMonth(4);expires.setYear(118);
-				if((int) productProperties.getBnumber_da() == 0) balances.add(new BalanceAndDate((int) productProperties.getBnumber_da(), volume_data, expires));
-				else balances.add(new DedicatedAccount((int) productProperties.getBnumber_da(), volume_data, expires));
-
-				// update Bnumber Balance
-				if(new AIRRequest().updateBalanceAndDate(Bnumber, balances, "TEST", "TEST", "eBA")) {
-					// update Bnumber sharing
-					Sharing sharing = new SharingDAOJdbc(dao).getOneSharing(Bnumber);
-					if(sharing == null) sharing = new Sharing(0, Bnumber, volume_data);
-					else sharing.setValue(volume_data);
-
-					new SharingDAOJdbc(dao).saveOneSharing(sharing);
-
-					return true;
+						return 0;
+					}
 				}
-				// rollback
 				else {
-					balances.clear();
-					if((int) productProperties.getAnumber_da() == 0) balances.add(new BalanceAndDate((int) productProperties.getAnumber_da(), volume_data, null));
-					else balances.add(new DedicatedAccount((int) productProperties.getAnumber_da(), volume_data, null));
-
-					if(new AIRRequest().updateBalanceAndDate(Anumber, balances, "TEST", "TEST", "eBA"));
-					else new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, 1, choice, Anumber, Bnumber, null));
+					return 0;
 				}
 			}
+			else {
+				if(request.isSuccessfully()) return 1;
+				else return -1;
+			}
+
+		} catch(NullPointerException ex) {
+
+		} catch(NumberFormatException ex) {
+
+		} catch(Exception ex) {
 
 		} catch(Throwable th) {
 
 		}
 
-		return false;
+		return -1;
+	}
+
+	@SuppressWarnings("deprecation")
+	public int activation(ProductProperties productProperties, DAO dao, String msisdn, boolean charged, boolean advantages, String originOperatorID) {
+		AIRRequest request = new AIRRequest();
+		if(charged && productProperties.getActivation_chargingAmount() == 0) charged = false;
+
+		HashSet<BalanceAndDate> balances = new HashSet<BalanceAndDate>();
+		if(productProperties.getChargingDA() == 0) balances.add(new BalanceAndDate(0, -productProperties.getActivation_chargingAmount(), null));
+		else balances.add(new DedicatedAccount(productProperties.getChargingDA(), -productProperties.getActivation_chargingAmount(), null));
+
+		// update Anumber Balance
+		if((!charged) || (request.updateBalanceAndDate(msisdn, balances, productProperties.getSms_notifications_header(), "ACTIVATION", "eBA"))) {
+			// update Anumber serviceOfferings
+			ServiceOfferings serviceOfferings = null;
+			if(productProperties.getServiceOfferings_IDs() != null) {
+				serviceOfferings = new ServiceOfferings();
+				int size = productProperties.getServiceOfferings_IDs().size();
+
+				for(int index = 0; index < size; index++) {
+					int serviceOfferingID = Integer.parseInt(productProperties.getServiceOfferings_IDs().get(index));
+					boolean activeFlag = (Integer.parseInt(productProperties.getServiceOfferings_activeFlags().get(index)) == 1) ? true : false;
+					serviceOfferings.SetActiveFlag(serviceOfferingID, activeFlag);
+				}
+			}
+
+			if((serviceOfferings == null) || (request.updateSubscriberSegmentation(msisdn, null, serviceOfferings, "eBA"))) {
+				// update Anumber Offer
+				if((productProperties.getOffer_id() == 0) || (request.updateOffer(msisdn, productProperties.getOffer_id(), null, null, null, "eBA"))) {
+					Date expires = new Date();
+					expires.setSeconds(59);expires.setMinutes(59);expires.setHours(23);
+
+					// sms advantages
+					balances = new HashSet<BalanceAndDate>();
+					if(productProperties.getAdvantages_sms_da() == 0) balances.add(new BalanceAndDate(0, productProperties.getAdvantages_sms_value(), expires));
+					else balances.add(new DedicatedAccount(productProperties.getAdvantages_sms_da(), productProperties.getAdvantages_sms_value(), expires));
+
+					// update Anumber Balance
+					if((!advantages) || ((productProperties.getAdvantages_sms_value() == 0) || request.updateBalanceAndDate(msisdn, balances, productProperties.getSms_notifications_header(), "ACTIVATION", "eBA"))) {
+
+						// data advantages
+						balances = new HashSet<BalanceAndDate>();
+						if(productProperties.getAdvantages_data_da() == 0) balances.add(new BalanceAndDate(0, productProperties.getAdvantages_data_value(), expires));
+						else balances.add(new DedicatedAccount(productProperties.getAdvantages_data_da(), productProperties.getAdvantages_data_value(), expires));
+
+						// update Anumber Balance
+						if((!advantages) || ((productProperties.getAdvantages_data_value() == 0) || request.updateBalanceAndDate(msisdn, balances, productProperties.getSms_notifications_header(), "ACTIVATION", "eBA"))) {
+
+						}
+						else {
+							// save rollback
+							new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, request.isSuccessfully() ? 5 : -5, 1, msisdn, msisdn, null));
+						}
+					}
+					else {
+						// save rollback
+						new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, request.isSuccessfully() ? 4 : -4, 1, msisdn, msisdn, null));
+					}
+
+					// delete others settings
+					// delete serviceOfferings
+					if(productProperties.getXtra_serviceOfferings_IDs() != null) {
+						serviceOfferings = new ServiceOfferings();
+						int size = productProperties.getXtra_serviceOfferings_IDs().size();
+
+						for(int index = 0; index < size; index++) {
+							int serviceOfferingID = Integer.parseInt(productProperties.getXtra_serviceOfferings_IDs().get(index));
+							boolean activeFlag = (Integer.parseInt(productProperties.getXtra_serviceOfferings_activeFlags().get(index)) == 1) ? true : false;
+							serviceOfferings.SetActiveFlag(serviceOfferingID, activeFlag);
+						}
+					}
+
+					if((serviceOfferings == null) || (request.updateSubscriberSegmentation(msisdn, null, serviceOfferings, "eBA"))) {
+						// delete offers
+						int[] offerIDs = null;
+						if(productProperties.getXtra_removal_offer_IDs() != null) {
+							offerIDs = new int[productProperties.getXtra_removal_offer_IDs().size()];
+
+							for(int index = 0; index < offerIDs.length; index++) {
+								offerIDs[index] = Integer.parseInt(productProperties.getXtra_removal_offer_IDs().get(index));
+							}
+						}
+
+						if(offerIDs != null) {
+							for(int offerID : offerIDs) {
+								if(request.deleteOffer(msisdn, offerID, "eBA", true));
+								else {
+									// save rollback
+									new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, request.isSuccessfully() ? 7 : -7, 1, msisdn, msisdn, null));
+								}
+							}
+						}
+					}
+					else {
+						// save rollback
+						new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, request.isSuccessfully() ? 6 : -6, 1, msisdn, msisdn, null));
+					}
+
+					return 0;
+				}
+				else {
+					if(request.isSuccessfully()) {
+						return new RollBackActions().activation(2, productProperties, dao, msisdn, charged);
+					}
+					else {
+						new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -3, 1, msisdn, msisdn, null));
+						return -1;
+					}
+				}
+			}
+			else {
+				if(request.isSuccessfully()) {
+					return new RollBackActions().activation(1, productProperties, dao, msisdn, charged);
+				}
+				else {
+					new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -2, 1, msisdn, msisdn, null));
+					return -1;
+				}
+
+			}
+		}
+		else {
+			if(request.isSuccessfully()) {
+				return 1;
+			}
+			else {
+				new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -1, 1, msisdn, msisdn, null));
+				return -1;
+			}
+		}
+	}
+
+	public int deactivation(ProductProperties productProperties, DAO dao, String msisdn, boolean charged) {
+		AIRRequest request = new AIRRequest();
+		if(charged && productProperties.getActivation_chargingAmount() == 0) charged = false;
+
+		HashSet<BalanceAndDate> balances = new HashSet<BalanceAndDate>();
+		if(productProperties.getChargingDA() == 0) balances.add(new BalanceAndDate(0, -productProperties.getDeactivation_chargingAmount(), null));
+		else balances.add(new DedicatedAccount((int) productProperties.getChargingDA(), -productProperties.getDeactivation_chargingAmount(), null));
+
+		// update Anumber Balance
+		if((!charged) || (request.updateBalanceAndDate(msisdn, balances, productProperties.getSms_notifications_header(), "DEACTIVATION", "eBA"))) {
+			// update Anumber serviceOfferings
+			ServiceOfferings serviceOfferings = null;
+			if(productProperties.getServiceOfferings_IDs() != null) {
+				serviceOfferings = new ServiceOfferings();
+				int size = productProperties.getServiceOfferings_IDs().size();
+
+				for(int index = 0; index < size; index++) {
+					int serviceOfferingID = Integer.parseInt(productProperties.getServiceOfferings_IDs().get(index));
+					boolean activeFlag = (Integer.parseInt(productProperties.getServiceOfferings_activeFlags().get(index)) == 1) ? false : true;
+					serviceOfferings.SetActiveFlag(serviceOfferingID, activeFlag);
+				}
+			}
+
+			if((serviceOfferings == null) || (request.updateSubscriberSegmentation(msisdn, null, serviceOfferings, "eBA"))) {
+				// update Anumber Offer
+				if((productProperties.getOffer_id() == 0) || (request.deleteOffer(msisdn, productProperties.getOffer_id(), "eBA", true))) {
+					return 0;
+				}
+				else {
+					if(request.isSuccessfully()) {
+						return new RollBackActions().deactivation(2, productProperties, dao, msisdn, charged);
+					}
+					else {
+						new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -3, 2, msisdn, msisdn, null));
+						return -1;
+					}
+				}
+			}
+			else {
+				if(request.isSuccessfully()) {
+					return new RollBackActions().deactivation(1, productProperties, dao, msisdn, charged);
+				}
+				else {
+					new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -2, 2, msisdn, msisdn, null));
+					return -1;
+				}
+
+			}
+		}
+		else {
+			if(request.isSuccessfully()) {
+				return 1;
+			}
+			else {
+				new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -1, 2, msisdn, msisdn, null));
+				return -1;
+			}
+		}
+	}
+
+	public AccountDetails getAccountDetails(AIRRequest request, String msisdn) {
+		return request.getAccountDetails(msisdn);
 	}
 
 }

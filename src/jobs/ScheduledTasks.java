@@ -24,9 +24,6 @@ public class ScheduledTasks {
 	@Autowired
 	private Job cleanExpiredUssdRequestJob;
 
-	@Autowired
-	private Job cleanDataSharingJob;
-
 	public ScheduledTasks() {
 
 	}
@@ -42,10 +39,6 @@ public class ScheduledTasks {
 
 	public void clear_ussd() {
 		execute(cleanExpiredUssdRequestJob);
-	}
-
-	public void clear_sharing() {
-		execute(cleanDataSharingJob);
 	}
 
 	public void execute(Job job) {

@@ -1,5 +1,7 @@
 package handlers;
 
+import java.text.SimpleDateFormat;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +16,7 @@ import org.springframework.context.MessageSource;
 
 import com.google.common.base.Splitter;
 
+import domain.models.Subscriber;
 import domain.models.USSDRequest;
 import filter.MSISDNValidator;
 import product.ProductProperties;
@@ -25,7 +28,7 @@ public class USSDFlow {
 
 	}
 
-	public Map<String, Object> validate(USSDRequest ussd, Document document, ProductProperties productProperties, MessageSource i18n, int language) {
+	public Map<String, Object> validate(USSDRequest ussd, int language, Document document, ProductProperties productProperties, MessageSource i18n) {
 		// on crée le modèle de la vue à afficher
 		Map<String, Object> modele = new HashMap<String, Object>();
 		// initialization
@@ -34,7 +37,6 @@ public class USSDFlow {
 		// on crée le modèle de l'arborescence
 		StringJoiner tree = new StringJoiner(".", ".", "");
 		tree.setEmptyValue("");
-		// List<Integer> tree = new LinkedList<Integer>();
 
 		try {
 			// USSD(int id, long sessionId, String msisdn, String input, int step, Date last_update_time)
@@ -142,11 +144,6 @@ public class USSDFlow {
 												return handleInvalidInput(i18n.getMessage("integer.required", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 											}
 
-										} catch(Exception ex) {
-											if(children.size() == 1) {
-												return handleInvalidInput(i18n.getMessage("integer.required", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
-											}
-
 										} catch(Throwable ex) {
 											if(children.size() == 1) {
 												return handleInvalidInput(i18n.getMessage("integer.required", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
@@ -159,7 +156,7 @@ public class USSDFlow {
 
 											if((element.getAttributeValue("ton").equals("International") && (msisdn.startsWith(productProperties.getMcc() + "")) && (((productProperties.getMcc() + "").length() + productProperties.getMsisdn_length()) == msisdn.length())) || ((element.getAttributeValue("ton").equals("National")) && (productProperties.getMsisdn_length() == msisdn.length()))) {
 											/*if((element.getAttributeValue("ton").equals("International")) || ((element.getAttributeValue("ton").equals("National")) && (webAppProperties.getMsisdn_length() == msisdn.length()))) {*/
-												if((element.getAttributeValue("network") == null) || (element.getAttributeValue("network").isEmpty())) {
+												if((element.getAttributeValue("network") == null) || (element.getAttributeValue("network").isEmpty()) || (element.getAttributeValue("network").equals("off"))) {
 													currentState = element;
 													tree.add(step + "");
 													continue transitions;
@@ -200,11 +197,6 @@ public class USSDFlow {
 												return handleInvalidInput(i18n.getMessage("msisdn.required", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 											}
 
-										} catch(Exception ex) {
-											if(children.size() == 1) {
-												return handleInvalidInput(i18n.getMessage("msisdn.required", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
-											}
-
 										} catch(Throwable ex) {
 											if(children.size() == 1) {
 												return handleInvalidInput(i18n.getMessage("msisdn.required", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
@@ -238,8 +230,8 @@ public class USSDFlow {
 				transitions = transitions.trim();
 
 				modele.put("status", 1);
-				/*if(transitions.length() == 0) modele.put("message", i18n.getMessage("menu", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
-				else modele.put("message", i18n.getMessage("menu." + transitions, null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));*/
+				/*if(transitions.length() == 0) modele.put("message", i18n.getMessage("menu", null, null, null));
+				else modele.put("message", i18n.getMessage("menu." + transitions, null, null, null));*/
 				modele.put("message", i18n.getMessage("menu" + transitions, null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 			}
 			// on-end : end-state
@@ -248,9 +240,6 @@ public class USSDFlow {
 			}
 
 		} catch(NullPointerException ex) {
-			handleException(modele, i18n, language);
-
-		} catch(Exception ex) {
 			handleException(modele, i18n, language);
 
 		} catch(Throwable th) {
@@ -275,7 +264,6 @@ public class USSDFlow {
 	}
 
 	public boolean hasChildren(Element currentSate) {
-		// return (currentSate == null) ? false : (currentSate.getContentSize() > 0);
 		return (currentSate == null) ? false : (currentSate.getChildren().size() > 0);
 	}
 

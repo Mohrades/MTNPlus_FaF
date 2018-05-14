@@ -12,22 +12,14 @@
 
 	<!-- The use of <context:component-scan> implicitly enables the functionality of <context:annotation-config>.
 	There is usually no need to include the <context:annotation-config> element when using <context:component-scan> -->
-    <context:annotation-config />
+    <!-- <context:annotation-config /> -->
 
-    <!-- <mvc:annotation-driven /> -->
+    <mvc:annotation-driven />
 
-  	<context:component-scan base-package="handlers" use-default-filters="false">
-  		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
-  		<!-- <context:include-filter type="regex" expression=".*Stub.*Repository" /> -->
-  		<context:include-filter type="regex" expression=".*RequestHandler" />
-
-  		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository" />
-  		<!-- <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service" /> -->
-  		<!-- <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Component" /> -->
-  	</context:component-scan>
+    <context:component-scan base-package="api" />
 
 	<mvc:interceptors>
-		<bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor" />
+		<!-- <bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor" />
 		<mvc:interceptor>
 			<mvc:mapping path="/**" />
 			<mvc:exclude-mapping path="/admin/**" />
@@ -36,7 +28,11 @@
 		<mvc:interceptor>
 			<mvc:mapping path="/secure/*" />
 			<bean class="org.example.SecurityInterceptor" />
-		</mvc:interceptor>
+		</mvc:interceptor> -->
+		<bean class="api.ExternalRequestInterceptor">
+			<property name="productProperties" ref="productProperties" />
+			<property name="dao" ref="dao" />
+		</bean>
 	</mvc:interceptors>
 
 </beans>

@@ -14,9 +14,7 @@ import com.google.common.base.Splitter;
 
 import connexions.AIRRequest;
 import dao.DAO;
-import dao.queries.SharingDAOJdbc;
 import dao.queries.USSDRequestDAOJdbc;
-import domain.models.Sharing;
 import domain.models.USSDRequest;
 import util.BalanceAndDate;
 

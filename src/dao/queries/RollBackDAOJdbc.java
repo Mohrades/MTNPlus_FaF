@@ -28,7 +28,7 @@ public class RollBackDAOJdbc {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 			if(rollBack.getId() == 0) {
-				getJdbcTemplate().update("INSERT INTO MTN_DATA_MONTH_ROLLBACK_EBA (STEP,VALUE,ANUMBER,BNUMBER,ERROR_TIME) VALUES(" + rollBack.getStep() + "," + rollBack.getValue() + ",'" + rollBack.getAnumber() + "','" + rollBack.getBnumber() + "',TIMESTAMP '" + dateFormat.format(new Date()) + "')");			
+				getJdbcTemplate().update("INSERT INTO MTN_PLUS_ROLLBACK_EBA (STEP,VALUE,ANUMBER,BNUMBER,ERROR_TIME) VALUES(" + rollBack.getStep() + "," + rollBack.getValue() + ",'" + rollBack.getAnumber() + "','" + rollBack.getBnumber() + "',TIMESTAMP '" + dateFormat.format(new Date()) + "')");			
 			}
 
 		} catch(EmptyResultDataAccessException emptyEx) {
@@ -39,20 +39,20 @@ public class RollBackDAOJdbc {
 	}
 
 	public RollBack getOneRollBack(int id) {
-		List<RollBack> rollbacks = getJdbcTemplate().query("SELECT ID,STEP,VALUE,ANUMBER,BNUMBER,ERROR_TIME FROM MTN_DATA_MONTH_ROLLBACK_EBA WHERE ID = " + id, new RollBackRowMapper());
+		List<RollBack> rollbacks = getJdbcTemplate().query("SELECT ID,STEP,VALUE,ANUMBER,BNUMBER,ERROR_TIME FROM MTN_PLUS_ROLLBACK_EBA WHERE ID = " + id, new RollBackRowMapper());
 		return rollbacks.isEmpty() ? null : rollbacks.get(0);
 	}
 
 	public List<RollBack> getAllRollBacks()  {
-		return getJdbcTemplate().query("SELECT ID,STEP,VALUE,ANUMBER,BNUMBER,ERROR_TIME FROM MTN_DATA_MONTH_ROLLBACK_EBA", new RollBackRowMapper());
+		return getJdbcTemplate().query("SELECT ID,STEP,VALUE,ANUMBER,BNUMBER,ERROR_TIME FROM MTN_PLUS_ROLLBACK_EBA", new RollBackRowMapper());
 	}
 
 	public void deleteOneRollBack(int id) {
-		getJdbcTemplate().update("DELETE FROM MTN_DATA_MONTH_ROLLBACK_EBA WHERE ID = " + id);
+		getJdbcTemplate().update("DELETE FROM MTN_PLUS_ROLLBACK_EBA WHERE ID = " + id);
 	}
 
 	public void deleteAllRollBacks() {
-		getJdbcTemplate().update("DELETE FROM MTN_DATA_MONTH_ROLLBACK_EBA");
+		getJdbcTemplate().update("DELETE FROM MTN_PLUS_ROLLBACK_EBA");
 	}
 
 }

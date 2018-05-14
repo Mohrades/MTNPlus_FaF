@@ -21,21 +21,65 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 	@Value("#{appConfig['gsm.short_code']}")
 	private short sc;
 
+	@Value("#{appConfig['sms.notifications.header']}")
+	private String sms_notifications_header;
+
 	private List<String> mnc;
 
 	@Value("#{appConfig['msisdn.length']}")
 	private byte msisdn_length;
+	
+	@Value("#{appConfig['charging.da']}")
+	private int chargingDA;
 
-	@Value("#{appConfig['Anumber.da']}")
-	private short Anumber_da;
+	@Value("#{appConfig['activation.chargingAmount']}")
+	private long activation_chargingAmount;
 
-	@Value("#{appConfig['Bnumber.da']}")
-	private short Bnumber_da;
+	@Value("#{appConfig['default.price.plan']}")
+	private String default_price_plan;
 
-	@Value("#{appConfig['sharing.data.volume.limit']}")
-	private int sharing_data_volume_limit;
+	@Value("#{appConfig['default.price.plan.deactivated']}")
+	private boolean default_price_plan_deactivated;
 
-	private List<String> data_volume;
+	@Value("#{appConfig['default.price.plan.url']}")
+	private String default_price_plan_url;
+
+	@Value("#{appConfig['advantages.always']}")
+	private boolean advantages_always;
+
+	@Value("#{appConfig['advantages.sms.da']}")
+	private int advantages_sms_da;
+
+	@Value("#{appConfig['advantages.sms.value']}")
+	private long advantages_sms_value;
+
+	@Value("#{appConfig['advantages.data.da']}")
+	private int advantages_data_da;
+
+	@Value("#{appConfig['advantages.data.value']}")
+	private long advantages_data_value;
+
+	@Value("#{appConfig['deactivation.freeCharging.startDate']}")
+	private short deactivation_freeCharging_startDate;
+	
+	@Value("#{appConfig['deactivation.chargingAmount']}")
+	private long deactivation_chargingAmount;
+
+	@Value("#{appConfig['fafMaxAllowedNumbers']}")
+	private short fafMaxAllowedNumbers;
+
+	@Value("#{appConfig['fafMaxAllowedOffNetNumbers']}")
+	private short fafMaxAllowedOffNetNumbers;
+
+	private List<String> xtra_serviceOfferings_IDs;
+	private List<String> xtra_serviceOfferings_activeFlags;
+	private List<String> xtra_removal_offer_IDs;
+
+	private List<String> serviceOfferings_IDs;
+	private List<String> serviceOfferings_activeFlags;
+	
+	@Value("#{appConfig['offer.id']}")
+	private int offer_id;
 
 	private List<String> Anumber_serviceClass_include_filter;
 	private List<String> Anumber_db_include_filter;
@@ -47,6 +91,8 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 	private List<String> Bnumber_serviceClass_exclude_filter;
 	private List<String> Bnumber_db_exclude_filter;
 
+	private List<String> originOperatorIDs_list;
+
 	@Value("#{appConfig['gsm.mnc']}")
 	public void setMnc(final String gsmmnc) {
 		if(isSet(gsmmnc)) {
@@ -54,10 +100,38 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 		}
 	 }
 
-	@Value("#{appConfig['data.volume']}")
-	public void setData_volume(final String data_volume) {
-		if(isSet(data_volume)) {
-			this.data_volume = Splitter.onPattern("[,]").trimResults().omitEmptyStrings().splitToList(data_volume);
+	@Value("#{appConfig['xtra.serviceOfferings.IDs']}")
+	public void setXtra_serviceOfferings_IDs(final String xtra_serviceOfferings_IDs) {
+		if(isSet(xtra_serviceOfferings_IDs)) {
+			this.xtra_serviceOfferings_IDs = Splitter.onPattern("[,]").trimResults().omitEmptyStrings().splitToList(xtra_serviceOfferings_IDs);
+		}
+	}
+
+	@Value("#{appConfig['xtra.serviceOfferings.activeFlags']}")
+	public void setXtra_serviceOfferings_activeFlags(final String xtra_serviceOfferings_activeFlags) {
+		if(isSet(xtra_serviceOfferings_activeFlags)) {
+			this.xtra_serviceOfferings_activeFlags = Splitter.onPattern("[,]").trimResults().omitEmptyStrings().splitToList(xtra_serviceOfferings_activeFlags);
+		}
+	}
+
+	@Value("#{appConfig['serviceOfferings.IDs']}")
+	public void setServiceOfferings_IDs(final String serviceOfferings_IDs) {
+		if(isSet(serviceOfferings_IDs)) {
+			this.serviceOfferings_IDs = Splitter.onPattern("[,]").trimResults().omitEmptyStrings().splitToList(serviceOfferings_IDs);
+		}
+	}
+
+	@Value("#{appConfig['serviceOfferings.activeFlags']}")
+	public void setServiceOfferings_activeFlags(final String serviceOfferings_activeFlags) {
+		if(isSet(serviceOfferings_activeFlags)) {
+			this.serviceOfferings_activeFlags = Splitter.onPattern("[,]").trimResults().omitEmptyStrings().splitToList(serviceOfferings_activeFlags);
+		}
+	}
+
+	@Value("#{appConfig['xtra.removal.offer.IDs']}")
+	public void setXtra_removal_offer_IDs(final String xtra_removal_offer_IDs) {
+		if(isSet(xtra_removal_offer_IDs)) {
+			this.xtra_removal_offer_IDs = Splitter.onPattern("[,]").trimResults().omitEmptyStrings().splitToList(xtra_removal_offer_IDs);
 		}
 	}
 
@@ -117,6 +191,13 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 		}
 	}
 
+	@Value("#{appConfig['originOperatorIDs.list']}")
+	public void setOriginOperatorIDs_list(final String originOperatorIDs_list) {
+		if(isSet(originOperatorIDs_list)) {
+			this.originOperatorIDs_list = Splitter.onPattern("[,]").trimResults().omitEmptyStrings().splitToList(originOperatorIDs_list);
+		}
+	}
+
 	public short getMcc() {
 		return mcc;
 	}
@@ -129,6 +210,10 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 		return sc;
 	}
 
+	public String getSms_notifications_header() {
+		return sms_notifications_header;
+	}
+
 	public List<String> getMnc() {
 		return mnc;
 	}
@@ -137,20 +222,84 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 		return msisdn_length;
 	}
 
-	public short getAnumber_da() {
-		return Anumber_da;
+	public List<String> getXtra_serviceOfferings_IDs() {
+		return xtra_serviceOfferings_IDs;
 	}
 
-	public short getBnumber_da() {
-		return Bnumber_da;
+	public List<String> getXtra_serviceOfferings_activeFlags() {
+		return xtra_serviceOfferings_activeFlags;
 	}
 
-	public List<String> getData_volume() {
-		return data_volume;
+	public String getDefault_price_plan() {
+		return default_price_plan;
 	}
 
-	public int getSharing_data_volume_limit() {
-		return sharing_data_volume_limit;
+	public boolean isDefault_price_plan_deactivated() {
+		return default_price_plan_deactivated;
+	}
+
+	public String getDefault_price_plan_url() {
+		return default_price_plan_url;
+	}
+
+	public short getFafMaxAllowedNumbers() {
+		return fafMaxAllowedNumbers;
+	}
+
+	public short getFafMaxAllowedOffNetNumbers() {
+		return fafMaxAllowedOffNetNumbers;
+	}
+
+	public boolean isAdvantages_always() {
+		return advantages_always;
+	}
+
+	public int getAdvantages_sms_da() {
+		return advantages_sms_da;
+	}
+
+	public long getAdvantages_sms_value() {
+		return advantages_sms_value;
+	}
+
+	public int getAdvantages_data_da() {
+		return advantages_data_da;
+	}
+
+	public long getAdvantages_data_value() {
+		return advantages_data_value;
+	}
+
+	public int getChargingDA() {
+		return chargingDA;
+	}
+
+	public long getActivation_chargingAmount() {
+		return activation_chargingAmount;
+	}
+
+	public short getDeactivation_freeCharging_startDate() {
+		return deactivation_freeCharging_startDate;
+	}
+
+	public long getDeactivation_chargingAmount() {
+		return deactivation_chargingAmount;
+	}
+
+	public List<String> getServiceOfferings_IDs() {
+		return serviceOfferings_IDs;
+	}
+
+	public List<String> getServiceOfferings_activeFlags() {
+		return serviceOfferings_activeFlags;
+	}
+
+	public int getOffer_id() {
+		return offer_id;
+	}
+
+	public List<String> getXtra_removal_offer_IDs() {
+		return xtra_removal_offer_IDs;
 	}
 
 	public List<String> getAnumber_serviceClass_include_filter() {
@@ -183,6 +332,10 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 
 	public List<String> getBnumber_db_exclude_filter() {
 		return Bnumber_db_exclude_filter;
+	}
+
+	public List<String> getOriginOperatorIDs_list() {
+		return originOperatorIDs_list;
 	}
 
 	public boolean isSet(String property_value) {

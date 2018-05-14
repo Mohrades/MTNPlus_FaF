@@ -22,7 +22,7 @@ public class MSISDNDAOJdbc {
 	}
 
 	public void saveOneMSISDN(MSISDN msisdn, String tableName) {
-		try{			
+		try {
 			if(msisdn.getId() == 0) {
 				getJdbcTemplate().update("INSERT INTO " + tableName + " (MSISDN) VALUES('" + msisdn.getValue() + "')");			
 			}
@@ -43,7 +43,7 @@ public class MSISDNDAOJdbc {
 	}
 
 	public MSISDN getOneMSISDN(String msisdn, String tableName) {
-		List<MSISDN> staffs = getJdbcTemplate().query("SELECT ID,MSISDN FROM " + tableName + " WHERE MSISDN = '" + msisdn + "'", new MSISDNRowMapper());
+		List<MSISDN> staffs = getJdbcTemplate().query("SELECT ID,MSISDN FROM " + tableName + " WHERE (MSISDN = '" + msisdn + "')", new MSISDNRowMapper());
 		return staffs.isEmpty() ? null : staffs.get(0);
 	}
 
@@ -52,7 +52,7 @@ public class MSISDNDAOJdbc {
 	}
 
 	public void deleteOneMSISDN(String msisdn, String tableName) {
-		getJdbcTemplate().update("DELETE FROM " + tableName + " WHERE MSISDN = '" + msisdn + "'");
+		getJdbcTemplate().update("DELETE FROM " + tableName + " WHERE (MSISDN = '" + msisdn + "')");
 	}
 
 }
