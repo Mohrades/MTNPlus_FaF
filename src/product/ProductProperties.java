@@ -61,9 +61,18 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 
 	@Value("#{appConfig['deactivation.freeCharging.startDate']}")
 	private short deactivation_freeCharging_startDate;
-	
+
+	@Value("#{appConfig['fafChangeRequest.startDate']}")
+	private short fafChangeRequest_startDate;
+
 	@Value("#{appConfig['deactivation.chargingAmount']}")
 	private long deactivation_chargingAmount;
+
+	@Value("#{appConfig['faf.requestedOwner']}")
+	private byte fafRequestedOwner;
+
+	@Value("#{appConfig['fafIndicator']}")
+	private byte fafIndicator;
 
 	@Value("#{appConfig['fafMaxAllowedNumbers']}")
 	private short fafMaxAllowedNumbers;
@@ -80,6 +89,9 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 	
 	@Value("#{appConfig['offer.id']}")
 	private int offer_id;
+
+	@Value("#{appConfig['faf.chargingAmount']}")
+	private long faf_chargingAmount;
 
 	private List<String> Anumber_serviceClass_include_filter;
 	private List<String> Anumber_db_include_filter;
@@ -242,6 +254,14 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 		return default_price_plan_url;
 	}
 
+	public byte getFafIndicator() {
+		return fafIndicator;
+	}
+
+	public byte getFafRequestedOwner() {
+		return fafRequestedOwner;
+	}
+
 	public short getFafMaxAllowedNumbers() {
 		return fafMaxAllowedNumbers;
 	}
@@ -280,6 +300,14 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 
 	public short getDeactivation_freeCharging_startDate() {
 		return deactivation_freeCharging_startDate;
+	}
+
+	public short getFafChangeRequest_startDate() {
+		return fafChangeRequest_startDate;
+	}
+
+	public long getFaf_chargingAmount() {
+		return faf_chargingAmount;
 	}
 
 	public long getDeactivation_chargingAmount() {

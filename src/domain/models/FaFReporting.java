@@ -6,17 +6,20 @@ public class FaFReporting implements Comparable<FaFReporting> {
 
 	private int id, subscriber;
 	private boolean flag;
+	private long chargingAmount;
 	private Date created_date_time;
-	private String originOperatorID;
+	private String fafNumber, originOperatorID;
 
 	public FaFReporting() {
 
 	}
 
-	public FaFReporting(int id, int subscriber, boolean flag, Date created_date_time, String originOperatorID) {
+	public FaFReporting(int id, int subscriber, String fafNumber, boolean flag, long chargingAmount, Date created_date_time, String originOperatorID) {
 		this.id = id;
 		this.subscriber = subscriber;
+		this.fafNumber = fafNumber;
 		this.flag = flag;
+		this.chargingAmount = chargingAmount;
 		this.created_date_time = created_date_time;
 		this.originOperatorID = originOperatorID;
 	}
@@ -37,12 +40,28 @@ public class FaFReporting implements Comparable<FaFReporting> {
 		this.subscriber = subscriber;
 	}
 
+	public String getFafNumber() {
+		return fafNumber;
+	}
+
+	public void setFafNumber(String fafNumber) {
+		this.fafNumber = fafNumber;
+	}
+
 	public boolean isFlag() {
 		return flag;
 	}
 
 	public void setFlag(boolean flag) {
 		this.flag = flag;
+	}
+
+	public long getChargingAmount() {
+		return chargingAmount;
+	}
+
+	public void setChargingAmount(long chargingAmount) {
+		this.chargingAmount = chargingAmount;
 	}
 
 	public Date getCreated_date_time() {

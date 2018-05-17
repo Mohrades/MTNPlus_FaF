@@ -4,18 +4,18 @@ import java.util.Date;
 
 public class Subscriber extends MSISDN {
 
-	private Date last_update_time, fafChangeUnbarDate;
-	private boolean flag, locked;
+	private Date last_update_time;
+	private boolean flag, fafChargingEnabled, locked;
 
 	public Subscriber() {
 		super();
 	}
 
-	public Subscriber(int id, String msisdn, boolean flag, Date last_update_time, Date fafChangeUnbarDate, boolean locked) {
+	public Subscriber(int id, String msisdn, boolean flag, boolean fafChargingEnabled, Date last_update_time, boolean locked) {
 		super(id, msisdn);
 		this.flag = flag;
+		this.fafChargingEnabled = fafChargingEnabled;
 		this.last_update_time = last_update_time;
-		this.fafChangeUnbarDate = fafChangeUnbarDate;
 		this.locked = locked;
 	}
 
@@ -27,20 +27,20 @@ public class Subscriber extends MSISDN {
 		this.flag = flag;
 	}
 
+	public boolean isFafChargingEnabled() {
+		return fafChargingEnabled;
+	}
+
+	public void setFafChargingEnabled(boolean fafChargingEnabled) {
+		this.fafChargingEnabled = fafChargingEnabled;
+	}
+
 	public Date getLast_update_time() {
 		return last_update_time;
 	}
 
 	public void setLast_update_time(Date last_update_time) {
 		this.last_update_time = last_update_time;
-	}
-
-	public Date getFafChangeUnbarDate() {
-		return fafChangeUnbarDate;
-	}
-
-	public void setFafChangeUnbarDate(Date fafChangeUnbarDate) {
-		this.fafChangeUnbarDate = fafChangeUnbarDate;
 	}
 
 	public boolean isLocked() {

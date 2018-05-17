@@ -24,23 +24,17 @@ public class SubscriberDAOJdbc {
 	}
 
 	@SuppressWarnings("deprecation")
-	public int saveOneSubscriber(Subscriber subscriber) {
+	public int saveOneSubscriber(Subscriber subscriber, int days) {
 		try {
 			if(subscriber.getId() == 0) {
 				Date now = new Date();
-				Date next_month = new Date();
-				next_month.setYear(now.getYear());
-				next_month.setMonth(now.getMonth());
-				next_month.setDate(now.getDate() + 30);
-				next_month.setHours(now.getHours());
-				next_month.setMinutes(now.getMinutes());
-				next_month.setSeconds(now.getSeconds());
+				now.setDate(now.getDate() + days);
 
 				if(subscriber.isLocked()) {
-					getJdbcTemplate().update("INSERT INTO MTN_PLUS_MSISDN_EBA (MSISDN,FLAG,FAF_CHANGE_UNBAR_DATE,LOCKED) VALUES('" + subscriber.getValue() + "'," + (subscriber.isFlag() ? 1 : 0) + ",TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(next_month) + "'," + (subscriber.isLocked() ? 1 : 0) + ")");
+					getJdbcTemplate().update("INSERT INTO MTN_PLUS_MSISDN_EBA (MSISDN,FLAG,FAF_CHARGING_ENABLED,LOCKED) VALUES('" + subscriber.getValue() + "'," + (subscriber.isFlag() ? 1 : 0) + "," + (subscriber.isFafChargingEnabled() ? 1 : 0) + "," + (subscriber.isLocked() ? 1 : 0) + ")");
 				}
 				else {
-					getJdbcTemplate().update("INSERT INTO MTN_PLUS_MSISDN_EBA (MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHANGE_UNBAR_DATE,LOCKED) VALUES('" + subscriber.getValue() + "'," + (subscriber.isFlag() ? 1 : 0) + ",TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(now) + "',TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(next_month) + "'," + (subscriber.isLocked() ? 1 : 0) + ")");
+					getJdbcTemplate().update("INSERT INTO MTN_PLUS_MSISDN_EBA (MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHARGING_ENABLED,LOCKED) VALUES('" + subscriber.getValue() + "'," + (subscriber.isFlag() ? 1 : 0) + ",TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(now) + "'," + (subscriber.isFafChargingEnabled() ? 1 : 0) + "," + (subscriber.isLocked() ? 1 : 0) + ")");
 				}
 
 				return 1;
@@ -60,7 +54,7 @@ public class SubscriberDAOJdbc {
 	}
 
 	@SuppressWarnings("deprecation")
-	public void releaseLock(Subscriber subscriber, boolean rollback) {
+	public void releasePricePlanCurrentStatusAndLock(Subscriber subscriber, boolean rollback, int days) {
 		try {
 			if(rollback) {
 				if(subscriber.getId() > 0) getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET FLAG = (CASE FLAG WHEN 1 THEN 0 ELSE 1 END), LOCKED = 0 WHERE ((ID = " + subscriber.getId() + ") AND (LOCKED = 1))");
@@ -71,25 +65,24 @@ public class SubscriberDAOJdbc {
 				Date next_month = new Date();
 				next_month.setYear(now.getYear());
 				next_month.setMonth(now.getMonth());
-				next_month.setDate(now.getDate() + 30);
+				next_month.setDate(now.getDate() + days);
 				next_month.setHours(now.getHours());
 				next_month.setMinutes(now.getMinutes());
 				next_month.setSeconds(now.getSeconds());
 
-				if(subscriber.getId() > 0) getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET LAST_UPDATE_TIME = TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(now) + "', FAF_CHANGE_UNBAR_DATE = (CASE FLAG WHEN 1 THEN TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(next_month) + "' ELSE FAF_CHANGE_UNBAR_DATE END), LOCKED = 0 WHERE ((ID = " + subscriber.getId() + ") AND (LOCKED = 1))");
-				else getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET LAST_UPDATE_TIME = TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(now) + "', FAF_CHANGE_UNBAR_DATE = (CASE FLAG WHEN 1 THEN TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(next_month) + "' ELSE FAF_CHANGE_UNBAR_DATE END), LOCKED = 0 WHERE ((MSISDN = '" + subscriber.getValue() + "') AND (LOCKED = 1))");
+				if(subscriber.getId() > 0) getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET LAST_UPDATE_TIME = TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(now) + "' LOCKED = 0 WHERE ((ID = " + subscriber.getId() + ") AND (LOCKED = 1))");
+				else getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET LAST_UPDATE_TIME = TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(now) + "', LOCKED = 0 WHERE ((MSISDN = '" + subscriber.getValue() + "') AND (LOCKED = 1))");
 			}
 
 		} catch(Throwable th) {
 
 		}
 	}
-
-	public int setFaFFlag(Subscriber subscriber) {
+	
+	public int lock(Subscriber subscriber) {
 		try {
 			if(subscriber.getId() > 0) {
-				// return getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET FAF_CHANGE_UNBAR_DATE = TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date()) + "' WHERE ((ID = " + subscriber.getId() + ") AND (FLAG = 1))");
-				return getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET FAF_CHANGE_UNBAR_DATE = TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(subscriber.getFafChangeUnbarDate()) + "' WHERE ((ID = " + subscriber.getId() + ") AND (FLAG = 1))");
+				return getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET LOCKED = 1 WHERE ((ID = " + subscriber.getId() + ") AND (LOCKED = 0))");
 			}
 
 		} catch(EmptyResultDataAccessException emptyEx) {
@@ -99,35 +92,57 @@ public class SubscriberDAOJdbc {
 			return -1;
 		}
 
-		return 0;		
+		return 0;
+	}
+
+	
+	public void unLock(Subscriber subscriber) {
+		getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET LOCKED = 0 WHERE ((ID = " + subscriber.getId() + ") AND (LOCKED = 1))");
+	}
+
+	public int saveFafChargingStatus(Subscriber subscriber) {
+		try {
+			if(subscriber.getId() > 0) {
+				// return getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET FAF_CHARGING_ENABLED = " + (subscriber.isFafChargingEnabled() ? 1 : 0) + " WHERE ((ID = " + subscriber.getId() + ") AND (FLAG = 1) AND (FAF_CHARGING_ENABLED = 0))");
+				return getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET FAF_CHARGING_ENABLED = " + (subscriber.isFafChargingEnabled() ? 1 : 0) + " WHERE ((ID = " + subscriber.getId() + ") AND (FAF_CHARGING_ENABLED = 0))");
+			}
+
+		} catch(EmptyResultDataAccessException emptyEx) {
+			return -1;
+
+		} catch(Throwable th) {
+			return -1;
+		}
+
+		return 0;
 	}
 
 	public Subscriber getOneSubscriber(int id, boolean locked) {
-		List<Subscriber> subscribers = getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHANGE_UNBAR_DATE,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE ((ID = " + id + ") AND (LOCKED = " + (locked ? 1 : 0) + "))", new SubscriberRowMapper());
+		List<Subscriber> subscribers = getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE ((ID = " + id + ") AND (LOCKED = " + (locked ? 1 : 0) + "))", new SubscriberRowMapper());
 		return subscribers.isEmpty() ? null : subscribers.get(0);
 	}
 
 	public Subscriber getOneSubscriber(int id) {
-		List<Subscriber> subscribers = getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHANGE_UNBAR_DATE,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE ID = " + id, new SubscriberRowMapper());
+		List<Subscriber> subscribers = getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE ID = " + id, new SubscriberRowMapper());
 		return subscribers.isEmpty() ? null : subscribers.get(0);
 	}
 
 	public Subscriber getOneSubscriber(String msisdn, boolean locked) {
-		List<Subscriber> subscribers = getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHANGE_UNBAR_DATE,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE ((MSISDN = '" + msisdn + "') AND (LOCKED = " + (locked ? 1 : 0) + "))", new SubscriberRowMapper());
+		List<Subscriber> subscribers = getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE ((MSISDN = '" + msisdn + "') AND (LOCKED = " + (locked ? 1 : 0) + "))", new SubscriberRowMapper());
 		return subscribers.isEmpty() ? null : subscribers.get(0);
 	}
 
 	public Subscriber getOneSubscriber(String msisdn) {
-		List<Subscriber> subscribers = getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHANGE_UNBAR_DATE,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE (MSISDN = '" + msisdn + "')", new SubscriberRowMapper());
+		List<Subscriber> subscribers = getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE (MSISDN = '" + msisdn + "')", new SubscriberRowMapper());
 		return subscribers.isEmpty() ? null : subscribers.get(0);
 	}
 
 	public List<Subscriber> getAllSubscribers(boolean locked) {
-		return  getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHANGE_UNBAR_DATE,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE LOCKED = " + (locked ? 1 : 0), new SubscriberRowMapper());
+		return  getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE LOCKED = " + (locked ? 1 : 0), new SubscriberRowMapper());
 	}
 
 	public List<Subscriber> getAllSubscribers() {
-		return  getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHANGE_UNBAR_DATE,LOCKED FROM MTN_PLUS_MSISDN_EBA", new SubscriberRowMapper());
+		return  getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA", new SubscriberRowMapper());
 	}
 
 	public void deleteOneSubscriber(int id) {

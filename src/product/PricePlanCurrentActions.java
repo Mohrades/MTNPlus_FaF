@@ -14,9 +14,9 @@ import util.BalanceAndDate;
 import util.DedicatedAccount;
 import util.ServiceOfferings;
 
-public class ProductActions {
+public class PricePlanCurrentActions {
 
-	public ProductActions() {
+	public PricePlanCurrentActions() {
 
 	}
 
@@ -179,7 +179,7 @@ public class ProductActions {
 				}
 				else {
 					if(request.isSuccessfully()) {
-						return new RollBackActions().activation(2, productProperties, dao, msisdn, charged);
+						return new PricePlanCurrentRollBackActions().activation(2, productProperties, dao, msisdn, charged);
 					}
 					else {
 						new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -3, 1, msisdn, msisdn, null));
@@ -189,13 +189,12 @@ public class ProductActions {
 			}
 			else {
 				if(request.isSuccessfully()) {
-					return new RollBackActions().activation(1, productProperties, dao, msisdn, charged);
+					return new PricePlanCurrentRollBackActions().activation(1, productProperties, dao, msisdn, charged);
 				}
 				else {
 					new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -2, 1, msisdn, msisdn, null));
 					return -1;
 				}
-
 			}
 		}
 		else {
@@ -239,7 +238,7 @@ public class ProductActions {
 				}
 				else {
 					if(request.isSuccessfully()) {
-						return new RollBackActions().deactivation(2, productProperties, dao, msisdn, charged);
+						return new PricePlanCurrentRollBackActions().deactivation(2, productProperties, dao, msisdn, charged);
 					}
 					else {
 						new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -3, 2, msisdn, msisdn, null));
@@ -249,7 +248,7 @@ public class ProductActions {
 			}
 			else {
 				if(request.isSuccessfully()) {
-					return new RollBackActions().deactivation(1, productProperties, dao, msisdn, charged);
+					return new PricePlanCurrentRollBackActions().deactivation(1, productProperties, dao, msisdn, charged);
 				}
 				else {
 					new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -2, 2, msisdn, msisdn, null));

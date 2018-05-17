@@ -12,7 +12,7 @@ public class SubscriberRowMapper implements RowMapper<Subscriber> {
 	public Subscriber mapRow(ResultSet rs, int rowNum) throws SQLException {
 		// TODO Auto-generated method stub
 
-		return new Subscriber(rs.getInt("ID"), rs.getString("MSISDN"), ((rs.getInt("FLAG") == 1) ? true : false), rs.getTimestamp("LAST_UPDATE_TIME"), rs.getTimestamp("FAF_CHANGE_UNBAR_DATE"), ((rs.getInt("LOCKED") == 1) ? true : false));
+		return new Subscriber(rs.getInt("ID"), rs.getString("MSISDN"), ((rs.getInt("FLAG") == 1) ? true : false), ((rs.getInt("FAF_CHARGING_ENABLED") == 1) ? true : false), rs.getTimestamp("LAST_UPDATE_TIME"), ((rs.getInt("LOCKED") == 1) ? true : false));
 	}
 
 }

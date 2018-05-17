@@ -1,12 +1,17 @@
 package product;
 
+import java.util.HashSet;
 import java.util.Locale;
 
 import org.springframework.context.MessageSource;
 
+import connexions.AIRRequest;
 import dao.DAO;
+import dao.queries.FaFReportingDAOJdbc;
 import dao.queries.SubscriberDAOJdbc;
+import domain.models.FaFReporting;
 import domain.models.Subscriber;
+import util.FafInformation;
 
 public class PricePlanCurrent {
 
@@ -15,11 +20,11 @@ public class PricePlanCurrent {
 	}
 
 	public Object [] activation(DAO dao, String msisdn, MessageSource i18n, int language, ProductProperties productProperties, String originOperatorID) {
-		return (new Activation()).execute(dao, msisdn, i18n, language, productProperties, "eBA");
+		return (new PricePlanCurrentActivation()).execute(dao, msisdn, i18n, language, productProperties, "eBA");
 	}
 
 	public Object [] deactivation(DAO dao, String msisdn, MessageSource i18n, int language, ProductProperties productProperties, String originOperatorID) {
-		return (new Deactivation()).execute(dao, msisdn, i18n, language, productProperties, "eBA");
+		return (new PricePlanCurrentDeactivation()).execute(dao, msisdn, i18n, language, productProperties, "eBA");
 	}
 
 	public Object[] getStatus(ProductProperties productProperties, MessageSource i18n, DAO dao, String msisdn, int language) {
@@ -27,13 +32,30 @@ public class PricePlanCurrent {
 		int statusCode = -1; // default
 
 		if(subscriber == null) {
-			statusCode = new ProductActions().isActivated(productProperties, dao, msisdn);
+			statusCode = new PricePlanCurrentActions().isActivated(productProperties, dao, msisdn);
+
+			// initialization the former price plan Status (formerly)
+			if((statusCode == 0) || (statusCode == 1)) {
+				AIRRequest request = new AIRRequest();
+				HashSet<FafInformation> fafNumbers = request.getFaFList(msisdn, productProperties.getFafRequestedOwner()).getList();
+
+				subscriber = new Subscriber(0, msisdn, (statusCode == 0) ? true : false, (fafNumbers.size() >= productProperties.getFafMaxAllowedNumbers()) ? true : false, null, false);
+				boolean registered = (new SubscriberDAOJdbc(dao).saveOneSubscriber(subscriber, -productProperties.getDeactivation_freeCharging_startDate()) == 1) ? true : false;
+
+				if(registered) {
+					subscriber = (new SubscriberDAOJdbc(dao)).getOneSubscriber(msisdn);
+					// log the former fafNumber Status (formerly)
+					for(FafInformation fafInformation : fafNumbers) {
+						(new FaFReportingDAOJdbc(dao)).saveOneFaFReporting(new FaFReporting(0, subscriber.getId(), fafInformation.getFafNumber(), true, 0, subscriber.getLast_update_time(), "eBA")); // reporting
+					}
+				}
+			}
 		}
 		else {
 			 if(subscriber.isLocked()) statusCode = -1;
 			 else {
 				 if(subscriber.isFlag()) {
-					 statusCode = new ProductActions().isActivated(productProperties, dao, msisdn);
+					 statusCode = new PricePlanCurrentActions().isActivated(productProperties, dao, msisdn);
 
 					 if(statusCode == 0) statusCode = 0; // success
 					 else if(statusCode == 1) statusCode = -1; // anormal
