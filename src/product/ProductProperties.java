@@ -29,7 +29,7 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 	@Value("#{appConfig['msisdn.length']}")
 	private byte msisdn_length;
 	
-	@Value("#{appConfig['charging.da']}")
+	@Value("#{appConfig['chargingDA']}")
 	private int chargingDA;
 
 	@Value("#{appConfig['activation.chargingAmount']}")
@@ -72,7 +72,7 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 	private byte fafRequestedOwner;
 
 	@Value("#{appConfig['fafIndicator']}")
-	private byte fafIndicator;
+	private int fafIndicator;
 
 	@Value("#{appConfig['fafMaxAllowedNumbers']}")
 	private short fafMaxAllowedNumbers;
@@ -254,7 +254,7 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 		return default_price_plan_url;
 	}
 
-	public byte getFafIndicator() {
+	public int getFafIndicator() {
 		return fafIndicator;
 	}
 
