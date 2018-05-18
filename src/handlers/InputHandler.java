@@ -15,10 +15,12 @@ import connexions.AIRRequest;
 import dao.DAO;
 import dao.queries.USSDRequestDAOJdbc;
 import dao.queries.USSDServiceDAOJdbc;
+import domain.models.Subscriber;
 import domain.models.USSDRequest;
 import domain.models.USSDService;
 import filter.MSISDNValidator;
 import product.DefaultPricePlan;
+import product.FaFNumberAdding;
 import product.PricePlanCurrent;
 import product.PricePlanCurrentActions;
 import product.ProductProperties;
@@ -183,6 +185,11 @@ public class InputHandler {
 
 	public void deactivation(DAO dao, USSDRequest ussd, MessageSource i18n, int language, ProductProperties productProperties, Map<String, Object> modele) {
 		Object [] requestStatus = (new PricePlanCurrent()).deactivation(dao, ussd.getMsisdn(), i18n, language, productProperties, "eBA");
+		endStep(dao, ussd, modele, productProperties, (String)requestStatus[1], ((int)requestStatus[0] == 0) ? ussd.getMsisdn() : null, null, null, ((int)requestStatus[0] == 0) ? productProperties.getSms_notifications_header() : null);
+	}
+
+	public void fafAdd(DAO dao, USSDRequest ussd, Subscriber subscriber, String fafNumber, MessageSource i18n, int language, ProductProperties productProperties, Map<String, Object> modele) {
+		Object [] requestStatus = (new FaFNumberAdding()).add(dao, subscriber, fafNumber, i18n, language, productProperties, "eBA");
 		endStep(dao, ussd, modele, productProperties, (String)requestStatus[1], ((int)requestStatus[0] == 0) ? ussd.getMsisdn() : null, null, null, ((int)requestStatus[0] == 0) ? productProperties.getSms_notifications_header() : null);
 	}
 

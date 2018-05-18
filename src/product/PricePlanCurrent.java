@@ -40,7 +40,7 @@ public class PricePlanCurrent {
 				HashSet<FafInformation> fafNumbers = request.getFaFList(msisdn, productProperties.getFafRequestedOwner()).getList();
 
 				subscriber = new Subscriber(0, msisdn, (statusCode == 0) ? true : false, (fafNumbers.size() >= productProperties.getFafMaxAllowedNumbers()) ? true : false, null, false);
-				boolean registered = (new SubscriberDAOJdbc(dao).saveOneSubscriber(subscriber, -productProperties.getDeactivation_freeCharging_startDate()) == 1) ? true : false;
+				boolean registered = (new SubscriberDAOJdbc(dao).saveOneSubscriber(subscriber, -productProperties.getDeactivation_freeCharging_days()) == 1) ? true : false;
 
 				if(registered) {
 					subscriber = (new SubscriberDAOJdbc(dao)).getOneSubscriber(msisdn);
@@ -77,7 +77,7 @@ public class PricePlanCurrent {
 			message = i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH);
 		}
 
-		return new Object [] {statusCode, message};
+		return new Object [] {statusCode, message, subscriber};
 	}
 
 }

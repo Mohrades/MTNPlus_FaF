@@ -59,11 +59,11 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 	@Value("#{appConfig['advantages.data.value']}")
 	private long advantages_data_value;
 
-	@Value("#{appConfig['deactivation.freeCharging.startDate']}")
-	private short deactivation_freeCharging_startDate;
+	@Value("#{appConfig['deactivation.freeCharging.days']}")
+	private short deactivation_freeCharging_days;
 
-	@Value("#{appConfig['fafChangeRequest.startDate']}")
-	private short fafChangeRequest_startDate;
+	@Value("#{appConfig['fafChangeRequestAllowedDays']}")
+	private short fafChangeRequestAllowedDays;
 
 	@Value("#{appConfig['deactivation.chargingAmount']}")
 	private long deactivation_chargingAmount;
@@ -298,12 +298,12 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 		return activation_chargingAmount;
 	}
 
-	public short getDeactivation_freeCharging_startDate() {
-		return deactivation_freeCharging_startDate;
+	public short getDeactivation_freeCharging_days() {
+		return deactivation_freeCharging_days;
 	}
 
-	public short getFafChangeRequest_startDate() {
-		return fafChangeRequest_startDate;
+	public short getFafChangeRequestAllowedDays() {
+		return fafChangeRequestAllowedDays;
 	}
 
 	public long getFaf_chargingAmount() {

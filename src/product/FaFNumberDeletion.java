@@ -50,9 +50,10 @@ public class FaFNumberDeletion {
 					Date CREATED_DATE_TIME = null;
 					if(reporting != null) {
 						CREATED_DATE_TIME = reporting.getCreated_date_time();
-						CREATED_DATE_TIME.setDate(CREATED_DATE_TIME.getDate() + productProperties.getFafChangeRequest_startDate());						
+						CREATED_DATE_TIME.setDate(CREATED_DATE_TIME.getDate() + productProperties.getFafChangeRequestAllowedDays());						
 					}
 
+					// check fafNumberOld is older than FafChangeRequest startDate
 					if((CREATED_DATE_TIME == null) || ((new Date()).after(CREATED_DATE_TIME))) {
 						HashSet<FafInformation> fafInformationList = new HashSet<FafInformation>();
 						fafInformationList.add(new FafInformation(fafNumber, productProperties.getFafIndicator()));
@@ -73,7 +74,7 @@ public class FaFNumberDeletion {
 							}
 						}
 					}
-					else return new Object [] {1, i18n.getMessage("fafChangeRequestNotAllowed", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+					else return new Object [] {1, i18n.getMessage("fafRemovalRequestNotAllowed", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 				}
 				else return new Object [] {-1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 			}
