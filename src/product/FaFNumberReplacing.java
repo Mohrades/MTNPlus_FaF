@@ -45,7 +45,7 @@ public class FaFNumberReplacing {
 
 			for(FafInformation fafInformation : fafNumbers) {
 				if(fafInformation.getFafNumber().equalsIgnoreCase(fafNumberNew)) {
-					return new Object [] {1, i18n.getMessage("fafNumberFound", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+					return new Object [] {1, i18n.getMessage("fafNumberFound", new Object[] {fafNumberNew}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 				}
 
 				if(fafInformation.getFafNumber().equalsIgnoreCase(fafNumberOld)) {
@@ -53,17 +53,17 @@ public class FaFNumberReplacing {
 				}
 
 				// check offnet fafNumber
-				if((new MSISDNValidator()).onNet(productProperties, fafInformation.getFafNumber()));
+				if((new MSISDNValidator()).onNet(productProperties, productProperties.getMcc() + fafInformation.getFafNumber()));
 				else offnet_count++;
 			}
 
 			if(!foundOld) {
-				return new Object [] {1, i18n.getMessage("fafNumberNotFound", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+				return new Object [] {1, i18n.getMessage("fafNumberNotFound", new Object[] {fafNumberOld}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 			}
 
 			// check offnet fafNumber limit reached
-			if((!(new MSISDNValidator()).onNet(productProperties, fafNumberNew)) && ((offnet_count >= productProperties.getFafMaxAllowedOffNetNumbers()) && ((new MSISDNValidator()).onNet(productProperties, fafNumberOld)))) {
-				return new Object [] {1, i18n.getMessage("FafMaxAllowedOffNetNumbers.limit.reachedFlag", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+			if((!(new MSISDNValidator()).onNet(productProperties, productProperties.getMcc() + fafNumberNew)) && ((offnet_count >= productProperties.getFafMaxAllowedOffNetNumbers()) && ((new MSISDNValidator()).onNet(productProperties, productProperties.getMcc() + fafNumberOld)))) {
+				return new Object [] {1, i18n.getMessage("fafMaxAllowedOffNetNumbers.limit.reachedFlag", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 			}
 
 			// check fafNumberOld is older than FafChangeRequest startDate
@@ -81,7 +81,7 @@ public class FaFNumberReplacing {
 					Object [] requestStatus  = (new FaFNumberAdding()).add(dao, subscriber, fafNumberNew, i18n, language, productProperties, originOperatorID);
 					if(((int)requestStatus[0] == 0)) {
 						requestStatus  = (new FaFNumberDeletion()).delete(dao, subscriber, fafNumberOld, i18n, language, productProperties, originOperatorID);
-						
+
 						if(((int)requestStatus[0] == 0)) {
 							return new Object [] {0, i18n.getMessage("fafChangeRequest.successful", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 						}
@@ -100,7 +100,7 @@ public class FaFNumberReplacing {
 						return requestStatus;
 					}
 				}
-				else return new Object [] {1, i18n.getMessage("fafChangeRequestNotAllowed", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+				else return new Object [] {1, i18n.getMessage("fafChangeRequestNotAllowed", new Object[] {fafNumberOld}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 			}
 			else return new Object [] {-1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 		}

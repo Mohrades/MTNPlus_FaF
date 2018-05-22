@@ -45,20 +45,20 @@ public class FaFNumberAdding {
 
 				for(FafInformation fafInformation : fafNumbers) {
 					if(fafInformation.getFafNumber().equalsIgnoreCase(fafNumber)) {
-						return new Object [] {1, i18n.getMessage("fafNumberFound", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+						return new Object [] {1, i18n.getMessage("fafNumberFound", new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 					}
 					// check offnet fafNumber
-					if((new MSISDNValidator()).onNet(productProperties, fafInformation.getFafNumber()));
+					if((new MSISDNValidator()).onNet(productProperties, productProperties.getMcc() + fafInformation.getFafNumber()));
 					else offnet_count++;
 				}
 
 				// check offnet fafNumber limit reached
-				if((!(new MSISDNValidator()).onNet(productProperties, fafNumber)) && (offnet_count >= productProperties.getFafMaxAllowedOffNetNumbers())) {
-					return new Object [] {1, i18n.getMessage("FafMaxAllowedOffNetNumbers.limit.reachedFlag", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+				if((!(new MSISDNValidator()).onNet(productProperties, productProperties.getMcc() + fafNumber)) && (offnet_count >= productProperties.getFafMaxAllowedOffNetNumbers())) {
+					return new Object [] {1, i18n.getMessage("fafMaxAllowedOffNetNumbers.limit.reachedFlag", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 				}
 				else {
 					// fire fafNumber Adding flow
-					 boolean charged = subscriber.isFafChargingEnabled();
+					 boolean charged = subscriber.isFafChangeRequestChargingEnabled();
 					 if(charged && productProperties.getFaf_chargingAmount() == 0) charged = false;
 
 					 HashSet<BalanceAndDate> balances = new HashSet<BalanceAndDate>();
@@ -74,7 +74,7 @@ public class FaFNumberAdding {
 						// add fafNumber
 				        if(request.updateFaFList(subscriber.getValue(), FaFAction.ADD, fafList, "eBA")) {
 							(new FaFReportingDAOJdbc(dao)).saveOneFaFReporting(new FaFReporting(0, subscriber.getId(), fafNumber, true, charged ? productProperties.getFaf_chargingAmount() : 0, null, originOperatorID)); // reporting
-							return new Object [] {0, i18n.getMessage("fafAddingRequest.successful", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+							return new Object [] {0, i18n.getMessage("fafAddingRequest.successful", new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 				        }
 						else {
 							if(request.isSuccessfully()) {
@@ -84,7 +84,7 @@ public class FaFNumberAdding {
 
 								// refund
 								if((!charged) || (request.updateBalanceAndDate(subscriber.getValue(), balances, productProperties.getSms_notifications_header(), "FAFADDINGREFUNDING", "eBA"))) {
-									return new Object [] {1, i18n.getMessage("fafAddingRequest.failed", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+									return new Object [] {1, i18n.getMessage("fafAddingRequest.failed", new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 								}
 								else {
 									if(request.isSuccessfully()) {

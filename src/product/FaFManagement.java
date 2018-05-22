@@ -53,9 +53,9 @@ public class FaFManagement {
 		}
 	}
 
-	public void setFafChargingEnabled(DAO dao, ProductProperties productProperties, Subscriber subscriber) {
-		// check if fafChangeRequest is charged
-		if(!subscriber.isFafChargingEnabled()) {
+	public void setFafChangeRequestChargingEnabled(DAO dao, ProductProperties productProperties, Subscriber subscriber) {
+		// check if fafChangeRequest must be charged
+		if(!subscriber.isFafChangeRequestChargingEnabled()) {
 			List<FaFReporting> reports = (new FaFReportingDAOJdbc(dao)).getFaFReporting(subscriber.getId());
 			int count = 0;
 
@@ -63,7 +63,7 @@ public class FaFManagement {
 				if(faFReporting.isFlag()) {
 					count++;
 					if(count >= productProperties.getFafMaxAllowedNumbers()) {
-						subscriber.setFafChargingEnabled(true);
+						subscriber.setFafChangeRequestChargingEnabled(true);
 						(new SubscriberDAOJdbc(dao)).saveFafChargingStatus(subscriber);
 						break;
 					}

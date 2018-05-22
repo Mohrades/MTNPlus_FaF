@@ -21,6 +21,9 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 	@Value("#{appConfig['gsm.short_code']}")
 	private short sc;
 
+	@Value("#{appConfig['gsm.short_code.secondary']}")
+	private short sc_secondary;
+
 	@Value("#{appConfig['sms.notifications.header']}")
 	private String sms_notifications_header;
 
@@ -220,6 +223,10 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 
 	public short getSc() {
 		return sc;
+	}
+
+	public short getSc_secondary() {
+		return sc_secondary;
 	}
 
 	public String getSms_notifications_header() {

@@ -62,11 +62,11 @@ public class FaFNumberDeletion {
 						// remove fafNumber
 				        if(request.updateFaFList(subscriber.getValue(), FaFAction.DELETE, fafList, "eBA")) {
 							(new FaFReportingDAOJdbc(dao)).saveOneFaFReporting(new FaFReporting(0, subscriber.getId(), fafNumber, false, 0, null, originOperatorID)); // reporting
-							return new Object [] {0, i18n.getMessage("fafRemovalRequest.successful", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};				        	
+							return new Object [] {0, i18n.getMessage("fafRemovalRequest.successful", new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};				        	
 				        }
 						else {
 							if(request.isSuccessfully()) {
-								return new Object [] {1, i18n.getMessage("fafRemovalRequest.failed", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+								return new Object [] {1, i18n.getMessage("fafRemovalRequest.failed", new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 							}
 							else {
 								new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -1, 5, subscriber.getValue(), fafNumber, null));
@@ -74,11 +74,11 @@ public class FaFNumberDeletion {
 							}
 						}
 					}
-					else return new Object [] {1, i18n.getMessage("fafRemovalRequestNotAllowed", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+					else return new Object [] {1, i18n.getMessage("fafRemovalRequestNotAllowed", new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 				}
 				else return new Object [] {-1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 			}
-			else return new Object [] {1, i18n.getMessage("fafNumberNotFound", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+			else return new Object [] {1, i18n.getMessage("fafNumberNotFound", new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 		}
 		else {
 			return new Object [] {-1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};

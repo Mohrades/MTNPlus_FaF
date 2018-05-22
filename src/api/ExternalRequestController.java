@@ -90,14 +90,16 @@ public class ExternalRequestController {
 				if(action.equals("deactivation")) {
 					// deactivation
 					if(statusCode == 0) {
-						Object [] requestStatus = (new PricePlanCurrent()).deactivation(dao, msisdn, i18n, language, productProperties, originOperatorID);
+						/*Object [] requestStatus = (new PricePlanCurrent()).deactivation(dao, msisdn, i18n, language, productProperties, originOperatorID);
 
 						// notification via sms
 						if((int)requestStatus[0] == 0) {
 							requestSubmitSmToSmppConnector(productProperties, (String)requestStatus[1], msisdn, null, null, productProperties.getSms_notifications_header());
 						}
 
-						return callback(msisdn, (int)requestStatus[0], (String)requestStatus[1]);
+						return callback(msisdn, (int)requestStatus[0], (String)requestStatus[1]);*/
+
+						return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 					}
 					else return callback(msisdn, -1, i18n.getMessage("status.unsuccessful.already", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 				}
@@ -106,7 +108,7 @@ public class ExternalRequestController {
 					if(statusCode == 0) return callback(msisdn, -1, i18n.getMessage("status.successful.already", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 					else {
 						// check msisdn is in default price plan
-						statusCode = productProperties.isDefault_price_plan_deactivated() ? (new DefaultPricePlan()).requestDefaultPricePlanStatus(productProperties, msisdn, originOperatorID) : 0;
+						/*statusCode = productProperties.isDefault_price_plan_deactivated() ? (new DefaultPricePlan()).requestDefaultPricePlanStatus(productProperties, msisdn, originOperatorID) : 0;
 
 						if(statusCode == 0) {
 							Object [] requestStatus = (new PricePlanCurrent()).activation(dao, msisdn, i18n, language, productProperties, originOperatorID);
@@ -118,7 +120,9 @@ public class ExternalRequestController {
 
 							return callback(msisdn, (int)requestStatus[0], (String)requestStatus[1]);
 						}
-						else return callback(msisdn, -1, i18n.getMessage("default.price.plan.required", new Object [] {productProperties.getDefault_price_plan()}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+						else return callback(msisdn, -1, i18n.getMessage("default.price.plan.required", new Object [] {productProperties.getDefault_price_plan()}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));*/
+
+						return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 					}
 				}
 				else return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
@@ -241,9 +245,8 @@ public class ExternalRequestController {
 	      return false;
 	    }
 
-	    String country_code = productProperties.getMcc() + "";
-	    if((phoneNumber.startsWith(country_code)) && (phoneNumber.matches("[0-9]*"))) {
-	    	if((country_code.length() + productProperties.getMsisdn_length()) == (phoneNumber.length())) {
+	    if(phoneNumber.matches("[0-9]*")) {
+	    	if(productProperties.getMsisdn_length() == phoneNumber.length()) {
 	    		return true;
 	    	}
 
@@ -266,7 +269,7 @@ public class ExternalRequestController {
 
 				if(new SubscriberDAOJdbc(dao).lock(subscriber) == 1) {
 					// fire the checking of fafChangeRequest charging
-					(new FaFManagement()).setFafChargingEnabled(dao, productProperties, subscriber);
+					(new FaFManagement()).setFafChangeRequestChargingEnabled(dao, productProperties, subscriber);
 
 					if(action == 1) {
 						requestStatus = (new FaFManagement()).add(dao, subscriber, fafNumberNew, i18n, language, productProperties, "eBA");

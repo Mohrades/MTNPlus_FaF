@@ -31,10 +31,10 @@ public class SubscriberDAOJdbc {
 				now.setDate(now.getDate() + days);
 
 				if(subscriber.isLocked()) {
-					getJdbcTemplate().update("INSERT INTO MTN_PLUS_MSISDN_EBA (MSISDN,FLAG,FAF_CHARGING_ENABLED,LOCKED) VALUES('" + subscriber.getValue() + "'," + (subscriber.isFlag() ? 1 : 0) + "," + (subscriber.isFafChargingEnabled() ? 1 : 0) + "," + (subscriber.isLocked() ? 1 : 0) + ")");
+					getJdbcTemplate().update("INSERT INTO MTN_PLUS_MSISDN_EBA (MSISDN,FLAG,FAF_CR_CHARGING_ENABLED,LOCKED) VALUES('" + subscriber.getValue() + "'," + (subscriber.isFlag() ? 1 : 0) + "," + (subscriber.isFafChangeRequestChargingEnabled() ? 1 : 0) + "," + (subscriber.isLocked() ? 1 : 0) + ")");
 				}
 				else {
-					getJdbcTemplate().update("INSERT INTO MTN_PLUS_MSISDN_EBA (MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHARGING_ENABLED,LOCKED) VALUES('" + subscriber.getValue() + "'," + (subscriber.isFlag() ? 1 : 0) + ",TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(now) + "'," + (subscriber.isFafChargingEnabled() ? 1 : 0) + "," + (subscriber.isLocked() ? 1 : 0) + ")");
+					getJdbcTemplate().update("INSERT INTO MTN_PLUS_MSISDN_EBA (MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CR_CHARGING_ENABLED,LOCKED) VALUES('" + subscriber.getValue() + "'," + (subscriber.isFlag() ? 1 : 0) + ",TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(now) + "'," + (subscriber.isFafChangeRequestChargingEnabled() ? 1 : 0) + "," + (subscriber.isLocked() ? 1 : 0) + ")");
 				}
 
 				return 1;
@@ -103,8 +103,8 @@ public class SubscriberDAOJdbc {
 	public int saveFafChargingStatus(Subscriber subscriber) {
 		try {
 			if(subscriber.getId() > 0) {
-				// return getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET FAF_CHARGING_ENABLED = " + (subscriber.isFafChargingEnabled() ? 1 : 0) + " WHERE ((ID = " + subscriber.getId() + ") AND (FLAG = 1) AND (FAF_CHARGING_ENABLED = 0))");
-				return getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET FAF_CHARGING_ENABLED = " + (subscriber.isFafChargingEnabled() ? 1 : 0) + " WHERE ((ID = " + subscriber.getId() + ") AND (FAF_CHARGING_ENABLED = 0))");
+				// return getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET FAF_CHARGING_ENABLED = " + (subscriber.isFafChargingEnabled() ? 1 : 0) + " WHERE ((ID = " + subscriber.getId() + ") AND (FLAG = 1) AND (FAF_CR_CHARGING_ENABLED = 0))");
+				return getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET FAF_CR_CHARGING_ENABLED = " + (subscriber.isFafChangeRequestChargingEnabled() ? 1 : 0) + " WHERE ((ID = " + subscriber.getId() + ") AND (FAF_CR_CHARGING_ENABLED = 0))");
 			}
 
 		} catch(EmptyResultDataAccessException emptyEx) {
@@ -118,31 +118,31 @@ public class SubscriberDAOJdbc {
 	}
 
 	public Subscriber getOneSubscriber(int id, boolean locked) {
-		List<Subscriber> subscribers = getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE ((ID = " + id + ") AND (LOCKED = " + (locked ? 1 : 0) + "))", new SubscriberRowMapper());
+		List<Subscriber> subscribers = getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CR_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE ((ID = " + id + ") AND (LOCKED = " + (locked ? 1 : 0) + "))", new SubscriberRowMapper());
 		return subscribers.isEmpty() ? null : subscribers.get(0);
 	}
 
 	public Subscriber getOneSubscriber(int id) {
-		List<Subscriber> subscribers = getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE ID = " + id, new SubscriberRowMapper());
+		List<Subscriber> subscribers = getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CR_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE ID = " + id, new SubscriberRowMapper());
 		return subscribers.isEmpty() ? null : subscribers.get(0);
 	}
 
 	public Subscriber getOneSubscriber(String msisdn, boolean locked) {
-		List<Subscriber> subscribers = getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE ((MSISDN = '" + msisdn + "') AND (LOCKED = " + (locked ? 1 : 0) + "))", new SubscriberRowMapper());
+		List<Subscriber> subscribers = getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CR_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE ((MSISDN = '" + msisdn + "') AND (LOCKED = " + (locked ? 1 : 0) + "))", new SubscriberRowMapper());
 		return subscribers.isEmpty() ? null : subscribers.get(0);
 	}
 
 	public Subscriber getOneSubscriber(String msisdn) {
-		List<Subscriber> subscribers = getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE (MSISDN = '" + msisdn + "')", new SubscriberRowMapper());
+		List<Subscriber> subscribers = getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CR_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE (MSISDN = '" + msisdn + "')", new SubscriberRowMapper());
 		return subscribers.isEmpty() ? null : subscribers.get(0);
 	}
 
 	public List<Subscriber> getAllSubscribers(boolean locked) {
-		return  getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE LOCKED = " + (locked ? 1 : 0), new SubscriberRowMapper());
+		return  getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CR_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA WHERE LOCKED = " + (locked ? 1 : 0), new SubscriberRowMapper());
 	}
 
 	public List<Subscriber> getAllSubscribers() {
-		return  getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA", new SubscriberRowMapper());
+		return  getJdbcTemplate().query("SELECT ID,MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CR_CHARGING_ENABLED,LOCKED FROM MTN_PLUS_MSISDN_EBA", new SubscriberRowMapper());
 	}
 
 	public void deleteOneSubscriber(int id) {

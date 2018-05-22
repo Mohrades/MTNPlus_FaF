@@ -3,6 +3,7 @@ package handlers;
 import java.text.SimpleDateFormat;
 import java.util.Formatter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -16,10 +17,14 @@ import org.springframework.context.MessageSource;
 
 import com.google.common.base.Splitter;
 
+import connexions.AIRRequest;
+import dao.DAO;
 import domain.models.Subscriber;
 import domain.models.USSDRequest;
 import filter.MSISDNValidator;
+import product.PricePlanCurrent;
 import product.ProductProperties;
+import util.FafInformation;
 
 @SuppressWarnings("unused")
 public class USSDFlow {
@@ -28,7 +33,7 @@ public class USSDFlow {
 
 	}
 
-	public Map<String, Object> validate(USSDRequest ussd, int language, Document document, ProductProperties productProperties, MessageSource i18n) {
+	public Map<String, Object> validate(USSDRequest ussd, int language, Document document, ProductProperties productProperties, MessageSource i18n, DAO dao) {
 		// on crée le modèle de la vue à afficher
 		Map<String, Object> modele = new HashMap<String, Object>();
 		// initialization
@@ -232,7 +237,56 @@ public class USSDFlow {
 				modele.put("status", 1);
 				/*if(transitions.length() == 0) modele.put("message", i18n.getMessage("menu", null, null, null));
 				else modele.put("message", i18n.getMessage("menu." + transitions, null, null, null));*/
-				modele.put("message", i18n.getMessage("menu" + transitions, null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+				if(("menu" + transitions).startsWith("menu.4")) {
+					Object [] requestStatus = (new PricePlanCurrent()).getStatus(productProperties, i18n, dao, ussd.getMsisdn(), language);
+
+					// subscriber in price plan current
+					if((int)(requestStatus[0]) == 0) {
+						if(("menu" + transitions).equals("menu.4")) {
+							AIRRequest request = new AIRRequest();
+							HashSet<FafInformation> fafNumbers = request.getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList();
+
+							if(fafNumbers.isEmpty()) {
+								modele.put("message", i18n.getMessage("menu.4_add", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+							}
+							else if(fafNumbers.size() > productProperties.getFafMaxAllowedNumbers()) {
+								modele.put("message", i18n.getMessage("menu.4_delete_and_status", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));								
+							}
+							else if(fafNumbers.size() >= productProperties.getFafMaxAllowedNumbers()) {
+								modele.put("message", i18n.getMessage("menu.4_without_adding", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));								
+							}
+							else {
+								modele.put("message", i18n.getMessage("menu.4_complete", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+							}
+						}
+						else if(("menu" + transitions).equals("menu.4.1.1")) {
+							String fafNumber = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(2);
+							modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+						}
+						else if(("menu" + transitions).equals("menu.4.3.1")) {
+							String fafNumber = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(2);
+							modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+						}
+						else if(("menu" + transitions).equals("menu.4.2.1.1")) {
+							String fafNumberOld = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(2);
+							String fafNumberNew = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(3);
+							modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {fafNumberOld, fafNumberNew}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));							
+						}
+						else modele.put("message", i18n.getMessage("menu" + transitions, null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+					}
+					// subscriber not in price plan current
+					else if((int)(requestStatus[0]) == 1) {
+						if(("menu" + transitions).equals("menu.4")) {// output only fafNumbers status choice
+							modele.put("message", i18n.getMessage("menu.4_status", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+						}
+						else handleNotAllowedMenu(modele, i18n, language);
+					}
+					// subscriber price plan status unknown
+					else handleServiceError(modele, i18n, language);
+				}
+				else {
+					modele.put("message", i18n.getMessage("menu" + transitions, null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+				}
 			}
 			// on-end : end-state
 			else {
@@ -247,6 +301,16 @@ public class USSDFlow {
 		}
 
 		return modele;
+	}
+
+	public void handleServiceError(Map<String, Object> modele, MessageSource i18n, int language) {
+		modele.put("status", -1);
+		modele.put("message", i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+	}
+
+	public void handleNotAllowedMenu(Map<String, Object> modele, MessageSource i18n, int language) {
+		modele.put("status", -1);
+		modele.put("message", i18n.getMessage("menu.disabled", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 	}
 
 	public void handleException(Map<String, Object> modele, MessageSource i18n, int language) {
