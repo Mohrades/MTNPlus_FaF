@@ -19,12 +19,12 @@ public class PricePlanCurrent {
 
 	}
 
-	public Object [] activation(DAO dao, String msisdn, MessageSource i18n, int language, ProductProperties productProperties, String originOperatorID) {
-		return (new PricePlanCurrentActivation()).execute(dao, msisdn, i18n, language, productProperties, "eBA");
+	public Object [] activation(DAO dao, String msisdn, Subscriber subscriber, MessageSource i18n, int language, ProductProperties productProperties, String originOperatorID) {
+		return (new PricePlanCurrentActivation()).execute(dao, msisdn, subscriber, i18n, language, productProperties, "eBA");
 	}
 
-	public Object [] deactivation(DAO dao, String msisdn, MessageSource i18n, int language, ProductProperties productProperties, String originOperatorID) {
-		return (new PricePlanCurrentDeactivation()).execute(dao, msisdn, i18n, language, productProperties, "eBA");
+	public Object [] deactivation(DAO dao, String msisdn, Subscriber subscriber, MessageSource i18n, int language, ProductProperties productProperties, String originOperatorID) {
+		return (new PricePlanCurrentDeactivation()).execute(dao, msisdn, subscriber, i18n, language, productProperties, "eBA");
 	}
 
 	public Object[] getStatus(ProductProperties productProperties, MessageSource i18n, DAO dao, String msisdn, int language) {
@@ -39,15 +39,24 @@ public class PricePlanCurrent {
 				AIRRequest request = new AIRRequest();
 				HashSet<FafInformation> fafNumbers = request.getFaFList(msisdn, productProperties.getFafRequestedOwner()).getList();
 
-				subscriber = new Subscriber(0, msisdn, (statusCode == 0) ? true : false, (fafNumbers.size() >= productProperties.getFafMaxAllowedNumbers()) ? true : false, null, false);
-				boolean registered = (new SubscriberDAOJdbc(dao).saveOneSubscriber(subscriber, -productProperties.getDeactivation_freeCharging_days()) == 1) ? true : false;
+				// be sure the initialization of the subscriber status and his previous attached fafNumbers is done with AIR availability
+				if(request.isSuccessfully()) {
+					subscriber = new Subscriber(0, msisdn, (statusCode == 0) ? true : false, (fafNumbers.size() >= productProperties.getFafMaxAllowedNumbers()) ? true : false, null, false);
+					boolean registered = (new SubscriberDAOJdbc(dao).saveOneSubscriber(subscriber) == 1) ? true : false;
 
-				if(registered) {
-					subscriber = (new SubscriberDAOJdbc(dao)).getOneSubscriber(msisdn);
-					// log the former fafNumber Status (formerly)
-					for(FafInformation fafInformation : fafNumbers) {
-						(new FaFReportingDAOJdbc(dao)).saveOneFaFReporting(new FaFReporting(0, subscriber.getId(), fafInformation.getFafNumber(), true, 0, subscriber.getLast_update_time(), "eBA")); // reporting
+					if(registered) {
+						subscriber = (new SubscriberDAOJdbc(dao)).getOneSubscriber(msisdn);
+						// log the former fafNumber Status (formerly)
+						for(FafInformation fafInformation : fafNumbers) {
+							(new FaFReportingDAOJdbc(dao)).saveOneFaFReporting(new FaFReporting(0, subscriber.getId(), fafInformation.getFafNumber(), true, 0, null, "eBA")); // reporting
+						}
 					}
+					else {
+						statusCode = -1;
+					}
+				}
+				else { // report the initialization to the next AIR availability
+					statusCode = -1;
 				}
 			}
 		}

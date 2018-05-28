@@ -15,6 +15,7 @@ public class USSDMenu {
 
 	public Document getContent(int root) {
 		// attributes : type = [text|number|msisdn|static] ; network = [on|off] ; ton = [National|International] ; value = [value_to_fixe]
+		// in case type equals to number, set attribute <<min>> and <<max>> to fix range if needed
 		// in case type equals to msisdn, set attribute <<ton>> required
 		// in case type equals to msisdn, set attribute <<network>> if needed (<<ton>> must be set to 'National')
 		// in case type equals to static, set attribute <<value>> required
@@ -29,7 +30,8 @@ public class USSDMenu {
 		body.addContent(new Element("choice-1"));
 		body.addContent(new Element("choice-2"));
 		body.addContent(new Element("choice-3"));
-		body.addContent(new Element("choice-4").addContent(new Element("choice-1").addContent(new Element("input").setAttribute("type","msisdn").setAttribute("ton","National").addContent(new Element("choice-1")).addContent(new Element("choice-2")))).addContent(new Element("choice-2").addContent(new Element("input").setAttribute("type","msisdn").setAttribute("ton","National").addContent(new Element("input").setAttribute("type","msisdn").setAttribute("ton","National").addContent(new Element("choice-1")).addContent(new Element("choice-2"))))).addContent(new Element("choice-3").addContent(new Element("input").setAttribute("type","msisdn").setAttribute("ton","National").addContent(new Element("choice-1")).addContent(new Element("choice-2")))).addContent(new Element("choice-4")));
+		// body.addContent(new Element("choice-4").addContent(new Element("choice-1").addContent(new Element("input").setAttribute("type","msisdn").setAttribute("ton","National").addContent(new Element("choice-1")).addContent(new Element("choice-2")))).addContent(new Element("choice-2").addContent(new Element("input").setAttribute("type","msisdn").setAttribute("ton","National").addContent(new Element("input").setAttribute("type","msisdn").setAttribute("ton","National").addContent(new Element("choice-1")).addContent(new Element("choice-2"))))).addContent(new Element("choice-3").addContent(new Element("input").setAttribute("type","msisdn").setAttribute("ton","National").addContent(new Element("choice-1")).addContent(new Element("choice-2")))).addContent(new Element("choice-4")));
+		body.addContent(new Element("choice-4").addContent(new Element("choice-1").addContent(new Element("input").setAttribute("type","msisdn").setAttribute("ton","National").addContent(new Element("choice-1")).addContent(new Element("choice-2")))).addContent(new Element("choice-2").addContent(new Element("input").setAttribute("type","number").setAttribute("min","1").setAttribute("max","5").addContent(new Element("input").setAttribute("type","msisdn").setAttribute("ton","National").addContent(new Element("choice-1")).addContent(new Element("choice-2"))))).addContent(new Element("choice-3").addContent(new Element("input").setAttribute("type","number").setAttribute("min","1").setAttribute("max","5").addContent(new Element("choice-1")).addContent(new Element("choice-2")))).addContent(new Element("choice-4")));
 
 	    return document;
 	}

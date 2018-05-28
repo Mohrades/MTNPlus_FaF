@@ -1,5 +1,6 @@
 package product;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
@@ -48,7 +49,7 @@ public class FaFNumberDeletion {
 
 				if((reporting == null) || (reporting.isFlag())) {
 					Date CREATED_DATE_TIME = null;
-					if(reporting != null) {
+					if((reporting != null) && (reporting.getCreated_date_time() != null)) {
 						CREATED_DATE_TIME = reporting.getCreated_date_time();
 						CREATED_DATE_TIME.setDate(CREATED_DATE_TIME.getDate() + productProperties.getFafChangeRequestAllowedDays());						
 					}
@@ -61,7 +62,7 @@ public class FaFNumberDeletion {
 
 						// remove fafNumber
 				        if(request.updateFaFList(subscriber.getValue(), FaFAction.DELETE, fafList, "eBA")) {
-							(new FaFReportingDAOJdbc(dao)).saveOneFaFReporting(new FaFReporting(0, subscriber.getId(), fafNumber, false, 0, null, originOperatorID)); // reporting
+							(new FaFReportingDAOJdbc(dao)).saveOneFaFReporting(new FaFReporting(0, subscriber.getId(), fafNumber, false, 0, new Date(), originOperatorID)); // reporting
 							return new Object [] {0, i18n.getMessage("fafRemovalRequest.successful", new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};				        	
 				        }
 						else {
@@ -74,7 +75,7 @@ public class FaFNumberDeletion {
 							}
 						}
 					}
-					else return new Object [] {1, i18n.getMessage("fafRemovalRequestNotAllowed", new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+					else return new Object [] {1, i18n.getMessage("fafRemovalRequestNotAllowed", new Object[] {fafNumber, (language == 2) ? (new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm")).format(CREATED_DATE_TIME) : (new SimpleDateFormat("dd/MM/yyyy 'a' HH:mm")).format(CREATED_DATE_TIME)}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 				}
 				else return new Object [] {-1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 			}

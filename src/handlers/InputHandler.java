@@ -1,6 +1,10 @@
 package handlers;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -28,6 +32,7 @@ import product.ProductProperties;
 import product.USSDMenu;
 import tools.SMPPConnector;
 import util.AccountDetails;
+import util.FafInformation;
 
 public class InputHandler {
 
@@ -91,32 +96,30 @@ public class InputHandler {
 						List<String> inputs = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput());
 
 						if(inputs.size() == 2) {
-							int statusCode = (int)(((new PricePlanCurrent()).getStatus(productProperties, i18n, dao, ussd.getMsisdn(), language))[0]);
+							Object [] requestStatus = (new PricePlanCurrent()).getStatus(productProperties, i18n, dao, ussd.getMsisdn(), language);
 
-							if(statusCode > 0) {
+							if((int)(requestStatus[0]) >= 0) {
 								/*if(false && ussd.getInput().endsWith("*0")) {*/
 								if(ussd.getInput().endsWith("*0")) {
 									// deactivation
-									if(statusCode == 0) {
+									if((int)(requestStatus[0]) == 0) {
 										endStep(dao, ussd, modele, productProperties, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH), null, null, null, null);
-										// pricePlanCurrentDeactivation(dao, ussd, i18n, language, productProperties, modele);
+										// pricePlanCurrentDeactivation(dao, ussd, (Subscriber)requestStatus[2], i18n, language, productProperties, modele);
 									}
 									else endStep(dao, ussd, modele, productProperties, i18n.getMessage("status.unsuccessful.already", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH), null, null, null, null);
 								}
 								else if(ussd.getInput().endsWith("*1")) {
 									// activation
-									if(statusCode == 0) endStep(dao, ussd, modele, productProperties, i18n.getMessage("status.successful.already", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH), null, null, null, null);
+									if((int)(requestStatus[0]) == 0) endStep(dao, ussd, modele, productProperties, i18n.getMessage("status.successful.already", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH), null, null, null, null);
 									else {
 										// check msisdn is in default price plan
-										/*statusCode = productProperties.isDefault_price_plan_deactivated() ? (new DefaultPricePlan()).requestDefaultPricePlanStatus(productProperties, ussd.getMsisdn(), "eBA") : 0;
+										requestStatus[0] = productProperties.isDefault_price_plan_deactivated() ? (new DefaultPricePlan()).requestDefaultPricePlanStatus(productProperties, ussd.getMsisdn(), "eBA") : 0;
 
-										if(statusCode == 0) {
+										if((int)(requestStatus[0]) == 0) {
 											endStep(dao, ussd, modele, productProperties, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH), null, null, null, null);
-											// pricePlanCurrentActivation(dao, ussd, i18n, language, productProperties, modele);
+											// pricePlanCurrentActivation(dao, ussd, (Subscriber)requestStatus[2], i18n, language, productProperties, modele);
 										}
-										else endStep(dao, ussd, modele, productProperties, i18n.getMessage("default.price.plan.required", new Object [] {productProperties.getDefault_price_plan()}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH), null, null, null, null);*/
-
-										endStep(dao, ussd, modele, productProperties, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH), null, null, null, null);
+										else endStep(dao, ussd, modele, productProperties, i18n.getMessage("default.price.plan.required", new Object [] {productProperties.getDefault_price_plan()}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH), null, null, null, null);
 									}
 								}
 							}
@@ -142,16 +145,28 @@ public class InputHandler {
 								fafNumbersStatus(i18n, language, productProperties, dao, ussd, modele);
 							}
 							// add fafNumber
-							if((inputs.size() == 5) && (ussd.getInput().startsWith(short_code + "*4*1")) && (ussd.getInput().endsWith(short_code + "*1"))) {
+							else if((inputs.size() == 5) && (ussd.getInput().startsWith(short_code + "*4*1")) && (ussd.getInput().endsWith("*1"))) {
 								handleFaFChangeRequest(dao, ussd, 1, null, inputs.get(3), i18n, language, productProperties, modele);
 							}
 							// delete fafNumber
-							if((inputs.size() == 5) && (ussd.getInput().startsWith(short_code + "*4*3")) && (ussd.getInput().endsWith(short_code + "*1"))) {
-								handleFaFChangeRequest(dao, ussd, 3, inputs.get(3), null, i18n, language, productProperties, modele);
+							else if((inputs.size() == 5) && (ussd.getInput().startsWith(short_code + "*4*3")) && (ussd.getInput().endsWith("*1"))) {
+								int indexOld = Integer.parseInt(Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(3));
+								HashSet<Integer> indexes = new HashSet<Integer>(); indexes.add(indexOld);
+								String fafNumberOld = (getFaFNumbers((new AIRRequest()).getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList(), productProperties, indexes)).get(indexOld);
+
+								if(fafNumberOld == null) endStep(dao, ussd, modele, productProperties, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH), null, null, null, null);
+								else handleFaFChangeRequest(dao, ussd, 3, fafNumberOld, null, i18n, language, productProperties, modele);
 							}
 							// modify fafNumber
-							if((inputs.size() == 6) && ((ussd.getInput().startsWith(short_code + "*4*2")) && (ussd.getInput().endsWith(short_code + "*1")))) {
-								handleFaFChangeRequest(dao, ussd, 2, inputs.get(3), inputs.get(4), i18n, language, productProperties, modele);
+							else if((inputs.size() == 6) && ((ussd.getInput().startsWith(short_code + "*4*2")) && (ussd.getInput().endsWith("*1")))) {
+								int indexOld = Integer.parseInt(Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(3));
+								HashSet<Integer> indexes = new HashSet<Integer>(); indexes.add(indexOld);
+								HashMap<Integer, String> result = (getFaFNumbers((new AIRRequest()).getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList(), productProperties, indexes));
+								String fafNumberOld = result.get(indexOld);
+								String fafNumberNew = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(4);
+
+								if(fafNumberOld == null) endStep(dao, ussd, modele, productProperties, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH), null, null, null, null);
+								else handleFaFChangeRequest(dao, ussd, 2, fafNumberOld, fafNumberNew, i18n, language, productProperties, modele);
 							}
 							else {
 								throw new Exception();
@@ -231,13 +246,13 @@ public class InputHandler {
 		modele.put("message", message);
 	}
 
-	public void pricePlanCurrentActivation(DAO dao, USSDRequest ussd, MessageSource i18n, int language, ProductProperties productProperties, Map<String, Object> modele) {
-		Object [] requestStatus = (new PricePlanCurrent()).activation(dao, ussd.getMsisdn(), i18n, language, productProperties, "eBA");
+	public void pricePlanCurrentActivation(DAO dao, USSDRequest ussd, Subscriber subscriber, MessageSource i18n, int language, ProductProperties productProperties, Map<String, Object> modele) {
+		Object [] requestStatus = (new PricePlanCurrent()).activation(dao, ussd.getMsisdn(), subscriber, i18n, language, productProperties, "eBA");
 		endStep(dao, ussd, modele, productProperties, (String)requestStatus[1], ((int)requestStatus[0] == 0) ? ussd.getMsisdn() : null, null, null, ((int)requestStatus[0] == 0) ? productProperties.getSms_notifications_header() : null);
 	}
 
-	public void pricePlanCurrentDeactivation(DAO dao, USSDRequest ussd, MessageSource i18n, int language, ProductProperties productProperties, Map<String, Object> modele) {
-		Object [] requestStatus = (new PricePlanCurrent()).deactivation(dao, ussd.getMsisdn(), i18n, language, productProperties, "eBA");
+	public void pricePlanCurrentDeactivation(DAO dao, USSDRequest ussd, Subscriber subscriber, MessageSource i18n, int language, ProductProperties productProperties, Map<String, Object> modele) {
+		Object [] requestStatus = (new PricePlanCurrent()).deactivation(dao, ussd.getMsisdn(), subscriber, i18n, language, productProperties, "eBA");
 		endStep(dao, ussd, modele, productProperties, (String)requestStatus[1], ((int)requestStatus[0] == 0) ? ussd.getMsisdn() : null, null, null, ((int)requestStatus[0] == 0) ? productProperties.getSms_notifications_header() : null);
 	}
 
@@ -280,4 +295,26 @@ public class InputHandler {
 		}
 	}
 
+	public HashMap<Integer, String> getFaFNumbers(HashSet<FafInformation> fafNumbers, ProductProperties productProperties, HashSet<Integer> indexes) {
+		HashMap<Integer, String> result = new HashMap<Integer, String>();
+
+		LinkedList<Long> fafNumbers_copy = new LinkedList<Long>();
+		for(FafInformation fafInformation : fafNumbers) {
+			fafNumbers_copy.add(Long.parseLong(fafInformation.getFafNumber()));
+		}
+
+		Collections.sort (fafNumbers_copy) ;
+		// Collections.sort (fafNumbers_copy, Collections.reverseOrder()) ;
+
+		int i = 0;
+		for(Long fafInformation : fafNumbers_copy) {
+			i++;
+
+			if(indexes.contains(i)) {
+				result.put(i, fafInformation + "");
+			}
+		}
+
+		return result;
+	}
 }

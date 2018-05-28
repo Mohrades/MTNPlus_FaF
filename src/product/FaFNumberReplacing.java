@@ -1,5 +1,6 @@
 package product;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
@@ -71,14 +72,14 @@ public class FaFNumberReplacing {
 
 			if((reporting == null) || (reporting.isFlag())) {
 				Date CREATED_DATE_TIME = null;
-				if(reporting != null) {
+				if((reporting != null) && (reporting.getCreated_date_time() != null)) {
 					CREATED_DATE_TIME = reporting.getCreated_date_time();
 					CREATED_DATE_TIME.setDate(CREATED_DATE_TIME.getDate() + productProperties.getFafChangeRequestAllowedDays());						
 				}
 
 				if((CREATED_DATE_TIME == null) || ((new Date()).after(CREATED_DATE_TIME))) {
 					// add new faf
-					Object [] requestStatus  = (new FaFNumberAdding()).add(dao, subscriber, fafNumberNew, i18n, language, productProperties, originOperatorID);
+					Object [] requestStatus  = (new FaFNumberAdding()).add(dao, subscriber, fafNumberNew, i18n, language, productProperties, originOperatorID, true);
 					if(((int)requestStatus[0] == 0)) {
 						requestStatus  = (new FaFNumberDeletion()).delete(dao, subscriber, fafNumberOld, i18n, language, productProperties, originOperatorID);
 
@@ -100,7 +101,7 @@ public class FaFNumberReplacing {
 						return requestStatus;
 					}
 				}
-				else return new Object [] {1, i18n.getMessage("fafChangeRequestNotAllowed", new Object[] {fafNumberOld}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+				else return new Object [] {1, i18n.getMessage("fafChangeRequestNotAllowed", new Object[] {fafNumberOld, (language == 2) ? (new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm")).format(CREATED_DATE_TIME) : (new SimpleDateFormat("dd/MM/yyyy 'a' HH:mm")).format(CREATED_DATE_TIME)}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 			}
 			else return new Object [] {-1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 		}

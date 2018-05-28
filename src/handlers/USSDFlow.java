@@ -1,6 +1,7 @@
 package handlers;
 
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -139,10 +140,26 @@ public class USSDFlow {
 									}
 									else if(element.getAttributeValue("type").equals("number")) {
 										try {
-											Long.parseLong(input);
-											currentState = element;
-											tree.add(step + "");
-											continue transitions;
+											long number = Long.parseLong(input);
+
+											if((((element.getAttributeValue("min") != null) && (number < Long.parseLong(element.getAttributeValue("min")))) || ((element.getAttributeValue("max") != null) && (number > Long.parseLong(element.getAttributeValue("max")))))) {
+												if(children.size() == 1) {
+													if((element.getAttributeValue("min") != null) && (element.getAttributeValue("max") != null)) {
+														return handleInvalidInput(i18n.getMessage("integer.range", new Object[] {Long.parseLong(element.getAttributeValue("min")), Long.parseLong(element.getAttributeValue("max"))}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+													}
+													else if(element.getAttributeValue("min") != null) {
+														return handleInvalidInput(i18n.getMessage("integer.min", new Object[] {Long.parseLong(element.getAttributeValue("min"))}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+													}
+													else if(element.getAttributeValue("max") != null) {
+														return handleInvalidInput(i18n.getMessage("integer.max", new Object[] {Long.parseLong(element.getAttributeValue("max"))}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+													}
+												}
+											}
+											else {
+												currentState = element;
+												tree.add(step + "");
+												continue transitions;												
+											}
 
 										} catch(NullPointerException|NumberFormatException ex) {
 											if(children.size() == 1) {
@@ -242,8 +259,9 @@ public class USSDFlow {
 
 					// subscriber in price plan current
 					if((int)(requestStatus[0]) == 0) {
+						AIRRequest request = new AIRRequest();
+
 						if(("menu" + transitions).equals("menu.4")) {
-							AIRRequest request = new AIRRequest();
 							HashSet<FafInformation> fafNumbers = request.getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList();
 
 							if(fafNumbers.isEmpty()) {
@@ -260,17 +278,53 @@ public class USSDFlow {
 							}
 						}
 						else if(("menu" + transitions).equals("menu.4.1.1")) {
-							String fafNumber = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(2);
+							String fafNumber = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(3);
 							modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+						}
+						else if(("menu" + transitions).equals("menu.4.3")) {
+							modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {getFafNumbersList(request.getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList())}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 						}
 						else if(("menu" + transitions).equals("menu.4.3.1")) {
-							String fafNumber = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(2);
-							modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+							int indexOld = Integer.parseInt(Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(3));
+							HashSet<Integer> indexes = new HashSet<Integer>(); indexes.add(indexOld);
+							HashSet<FafInformation> fafNumbers = request.getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList();
+							String fafNumber = (getFaFNumbers(fafNumbers, productProperties, indexes)).get(indexOld);
+
+							if(fafNumber == null) {
+								modele.put("status", -1);
+								modele.put("message", i18n.getMessage("integer.max", new Object[] {fafNumbers.size()}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+							}
+							else modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+						}
+						else if(("menu" + transitions).equals("menu.4.2")) {
+							modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {getFafNumbersList(request.getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList())}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+						}
+						else if(("menu" + transitions).equals("menu.4.2.1")) {
+							int indexOld = Integer.parseInt(Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(3));
+							HashSet<Integer> indexes = new HashSet<Integer>(); indexes.add(indexOld);
+							HashSet<FafInformation> fafNumbers = request.getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList();
+							HashMap<Integer, String> result = (getFaFNumbers(fafNumbers, productProperties, indexes));
+							String fafNumberOld = result.get(indexOld);
+
+							if(fafNumberOld == null) {
+								modele.put("status", -1);
+								modele.put("message", i18n.getMessage("integer.max", new Object[] {fafNumbers.size()}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+							}
+							else modele.put("message", i18n.getMessage("menu" + transitions, null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 						}
 						else if(("menu" + transitions).equals("menu.4.2.1.1")) {
-							String fafNumberOld = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(2);
-							String fafNumberNew = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(3);
-							modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {fafNumberOld, fafNumberNew}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));							
+							int indexOld = Integer.parseInt(Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(3));
+							HashSet<Integer> indexes = new HashSet<Integer>(); indexes.add(indexOld);
+							HashSet<FafInformation> fafNumbers = request.getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList();
+							HashMap<Integer, String> result = (getFaFNumbers(fafNumbers, productProperties, indexes));
+							String fafNumberOld = result.get(indexOld);
+							String fafNumberNew = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(4);
+
+							if(fafNumberOld == null) {
+								modele.put("status", -1);
+								modele.put("message", i18n.getMessage("integer.max", new Object[] {fafNumbers.size()}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+							}
+							else modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {fafNumberOld, fafNumberNew}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));							
 						}
 						else modele.put("message", i18n.getMessage("menu" + transitions, null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 					}
@@ -329,6 +383,52 @@ public class USSDFlow {
 
 	public boolean hasChildren(Element currentSate) {
 		return (currentSate == null) ? false : (currentSate.getChildren().size() > 0);
+	}
+
+	public HashMap<Integer, String> getFaFNumbers(HashSet<FafInformation> fafNumbers, ProductProperties productProperties, HashSet<Integer> indexes) {
+		HashMap<Integer, String> result = new HashMap<Integer, String>();
+
+		LinkedList<Long> fafNumbers_copy = new LinkedList<Long>();
+		for(FafInformation fafInformation : fafNumbers) {
+			fafNumbers_copy.add(Long.parseLong(fafInformation.getFafNumber()));
+		}
+
+		Collections.sort (fafNumbers_copy) ;
+		// Collections.sort (fafNumbers_copy, Collections.reverseOrder()) ;
+
+		int i = 0;
+		for(Long fafInformation : fafNumbers_copy) {
+			i++;
+
+			if(indexes.contains(i)) {
+				result.put(i, fafInformation + "");
+			}
+		}
+
+		return result;
+	}
+
+	public String getFafNumbersList(HashSet<FafInformation> fafNumbers) {
+		String fafNumbersList = "";
+
+		LinkedList<Long> fafNumbers_copy = new LinkedList<Long>();
+		for(FafInformation fafInformation : fafNumbers) {
+			fafNumbers_copy.add(Long.parseLong(fafInformation.getFafNumber()));
+		}
+
+		Collections.sort (fafNumbers_copy) ;
+
+		int index = 0;
+		for(Long fafInformation : fafNumbers_copy) {
+			index++;
+
+			if(fafNumbersList.isEmpty()) fafNumbersList = index + ". " + fafInformation;
+			else {
+				fafNumbersList += "\n" + index + ". " + fafInformation;
+			}
+		}
+
+		return fafNumbersList;
 	}
 
 }

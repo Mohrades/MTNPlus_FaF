@@ -23,10 +23,20 @@ public class FaFReportingDAOJdbc {
 
 	public void saveOneFaFReporting(FaFReporting reporting) {
 		if(reporting.getChargingAmount() == 0) {
-			getJdbcTemplate().update("INSERT INTO MTN_PLUS_FAF_REPORT_EBA (SUBSCRIBER,FAF_NUMBER,FLAG,CREATED_DATE_TIME,ORIGIN_OPERATOR_ID) VALUES(" + reporting.getSubscriber() + ",'" + reporting.getFafNumber() + "'," + (reporting.isFlag() ? 1 : 0) + ",TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(reporting.getCreated_date_time()) + "','" + reporting.getOriginOperatorID().replace("'", "''") + "')");
+			if(reporting.getCreated_date_time() == null) {
+				getJdbcTemplate().update("INSERT INTO MTN_PLUS_FAF_REPORT_EBA (SUBSCRIBER,FAF_NUMBER,FLAG,CREATED_DATE_TIME_INDEX,ORIGIN_OPERATOR_ID) VALUES(" + reporting.getSubscriber() + ",'" + reporting.getFafNumber() + "'," + (reporting.isFlag() ? 1 : 0) + ",0,'" + reporting.getOriginOperatorID().replace("'", "''") + "')");
+			}
+			else {
+				getJdbcTemplate().update("INSERT INTO MTN_PLUS_FAF_REPORT_EBA (SUBSCRIBER,FAF_NUMBER,FLAG,CREATED_DATE_TIME,CREATED_DATE_TIME_INDEX,ORIGIN_OPERATOR_ID) VALUES(" + reporting.getSubscriber() + ",'" + reporting.getFafNumber() + "'," + (reporting.isFlag() ? 1 : 0) + ",TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(reporting.getCreated_date_time()) + "'," + Integer.parseInt((new SimpleDateFormat("yyyyMMdd")).format(reporting.getCreated_date_time())) + ",'" + reporting.getOriginOperatorID().replace("'", "''") + "')");
+			}
 		}
 		else {
-			getJdbcTemplate().update("INSERT INTO MTN_PLUS_FAF_REPORT_EBA (SUBSCRIBER,FAF_NUMBER,FLAG,CHARGING_AMOUNT,CREATED_DATE_TIME,ORIGIN_OPERATOR_ID) VALUES(" + reporting.getSubscriber() + ",'" + reporting.getFafNumber() + "'," + (reporting.isFlag() ? 1 : 0) + "," + reporting.getChargingAmount() + ",TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(reporting.getCreated_date_time()) + "','" + reporting.getOriginOperatorID().replace("'", "''") + "')");
+			if(reporting.getCreated_date_time() == null) {
+				getJdbcTemplate().update("INSERT INTO MTN_PLUS_FAF_REPORT_EBA (SUBSCRIBER,FAF_NUMBER,FLAG,CHARGING_AMOUNT,CREATED_DATE_TIME_INDEX,ORIGIN_OPERATOR_ID) VALUES(" + reporting.getSubscriber() + ",'" + reporting.getFafNumber() + "'," + (reporting.isFlag() ? 1 : 0) + "," + reporting.getChargingAmount() + ",0,'" + reporting.getOriginOperatorID().replace("'", "''") + "')");
+			}
+			else {
+				getJdbcTemplate().update("INSERT INTO MTN_PLUS_FAF_REPORT_EBA (SUBSCRIBER,FAF_NUMBER,FLAG,CHARGING_AMOUNT,CREATED_DATE_TIME,CREATED_DATE_TIME_INDEX,ORIGIN_OPERATOR_ID) VALUES(" + reporting.getSubscriber() + ",'" + reporting.getFafNumber() + "'," + (reporting.isFlag() ? 1 : 0) + "," + reporting.getChargingAmount() + ",TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(reporting.getCreated_date_time()) + "'," + Integer.parseInt((new SimpleDateFormat("yyyyMMdd")).format(reporting.getCreated_date_time())) + ",'" + reporting.getOriginOperatorID().replace("'", "''") + "')");
+			}
 		}
 	}
 

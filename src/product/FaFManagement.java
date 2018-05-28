@@ -1,6 +1,8 @@
 package product;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
@@ -21,7 +23,7 @@ public class FaFManagement {
 	}
 
 	public Object [] add(DAO dao, Subscriber subscriber, String fafNumber, MessageSource i18n, int language, ProductProperties productProperties, String originOperatorID) {
-		return (new FaFNumberAdding()).add(dao, subscriber, fafNumber, i18n, language, productProperties, originOperatorID);
+		return (new FaFNumberAdding()).add(dao, subscriber, fafNumber, i18n, language, productProperties, originOperatorID, false);
 	}
 
 	public Object [] delete(DAO dao, Subscriber subscriber, String fafNumber, MessageSource i18n, int language, ProductProperties productProperties, String originOperatorID) {
@@ -36,16 +38,27 @@ public class FaFManagement {
 		AIRRequest request = new AIRRequest();
 		HashSet<FafInformation> fafNumbers = request.getFaFList(msisdn, productProperties.getFafRequestedOwner()).getList();
 
-		if(fafNumbers.isEmpty()) {
+		LinkedList<Long> fafNumbers_copy = new LinkedList<Long>();
+		for(FafInformation fafInformation : fafNumbers) {
+			fafNumbers_copy.add(Long.parseLong(fafInformation.getFafNumber()));
+		}
+
+		Collections.sort (fafNumbers_copy) ;
+		// Collections.sort (fafNumbers_copy, Collections.reverseOrder()) ;
+
+		if(fafNumbers_copy.isEmpty()) {
 			return new Object [] {1, i18n.getMessage("fafNumbers.empty", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 		}
 		else {
 			String fafNumbersList = "";
 
-			for(FafInformation fafInformation : fafNumbers) {
-				if(fafNumbersList.isEmpty()) fafNumbersList = fafInformation.getFafNumber();
+			int index = 0;
+			for(Long fafInformation : fafNumbers_copy) {
+				index++;
+
+				if(fafNumbersList.isEmpty()) fafNumbersList = index + ". " + fafInformation;
 				else {
-					fafNumbersList += ", " + fafInformation.getFafNumber();
+					fafNumbersList += "\n" + index + ". " + fafInformation;
 				}
 			}
 

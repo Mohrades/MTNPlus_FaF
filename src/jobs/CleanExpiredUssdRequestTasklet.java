@@ -29,8 +29,7 @@ public class CleanExpiredUssdRequestTasklet implements Tasklet {
 			Date now = new Date();
 			now.setMinutes(now.getMinutes()-5);
 
-			// System.out.println("DELETE FROM MTN_DATA_MONTH_USSD_EBA WHERE LAST_UPDATE_TIME < TIMESTAMP '" + sdf.format(now) + "'");
-			dao.getJdbcTemplate().update("DELETE FROM MTN_DATA_MONTH_USSD_EBA WHERE LAST_UPDATE_TIME < TIMESTAMP '" + sdf.format(now) + "'");
+			dao.getJdbcTemplate().update("DELETE FROM MTN_PLUS_USSD_EBA WHERE LAST_UPDATE_TIME < TIMESTAMP '" + sdf.format(now) + "'");
 
 			stepContribution.setExitStatus(ExitStatus.COMPLETED);
 			return RepeatStatus.FINISHED;

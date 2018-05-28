@@ -23,20 +23,10 @@ public class SubscriberDAOJdbc {
 		return dao.getJdbcTemplate();
 	}
 
-	@SuppressWarnings("deprecation")
-	public int saveOneSubscriber(Subscriber subscriber, int days) {
+	public int saveOneSubscriber(Subscriber subscriber) {
 		try {
 			if(subscriber.getId() == 0) {
-				Date now = new Date();
-				now.setDate(now.getDate() + days);
-
-				if(subscriber.isLocked()) {
-					getJdbcTemplate().update("INSERT INTO MTN_PLUS_MSISDN_EBA (MSISDN,FLAG,FAF_CR_CHARGING_ENABLED,LOCKED) VALUES('" + subscriber.getValue() + "'," + (subscriber.isFlag() ? 1 : 0) + "," + (subscriber.isFafChangeRequestChargingEnabled() ? 1 : 0) + "," + (subscriber.isLocked() ? 1 : 0) + ")");
-				}
-				else {
-					getJdbcTemplate().update("INSERT INTO MTN_PLUS_MSISDN_EBA (MSISDN,FLAG,LAST_UPDATE_TIME,FAF_CR_CHARGING_ENABLED,LOCKED) VALUES('" + subscriber.getValue() + "'," + (subscriber.isFlag() ? 1 : 0) + ",TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(now) + "'," + (subscriber.isFafChangeRequestChargingEnabled() ? 1 : 0) + "," + (subscriber.isLocked() ? 1 : 0) + ")");
-				}
-
+				getJdbcTemplate().update("INSERT INTO MTN_PLUS_MSISDN_EBA (MSISDN,FLAG,FAF_CR_CHARGING_ENABLED,LOCKED) VALUES('" + subscriber.getValue() + "'," + (subscriber.isFlag() ? 1 : 0) + "," + (subscriber.isFafChangeRequestChargingEnabled() ? 1 : 0) + "," + (subscriber.isLocked() ? 1 : 0) + ")");
 				return 1;
 			}
 			else if(subscriber.getId() > 0) {
