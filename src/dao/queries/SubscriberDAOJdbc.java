@@ -60,7 +60,7 @@ public class SubscriberDAOJdbc {
 				next_month.setMinutes(now.getMinutes());
 				next_month.setSeconds(now.getSeconds());
 
-				if(subscriber.getId() > 0) getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET LAST_UPDATE_TIME = TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(now) + "' LOCKED = 0 WHERE ((ID = " + subscriber.getId() + ") AND (LOCKED = 1))");
+				if(subscriber.getId() > 0) getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET LAST_UPDATE_TIME = TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(now) + "', LOCKED = 0 WHERE ((ID = " + subscriber.getId() + ") AND (LOCKED = 1))");
 				else getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET LAST_UPDATE_TIME = TIMESTAMP '" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(now) + "', LOCKED = 0 WHERE ((MSISDN = '" + subscriber.getValue() + "') AND (LOCKED = 1))");
 			}
 

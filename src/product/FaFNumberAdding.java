@@ -1,5 +1,6 @@
 package product;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
@@ -27,7 +28,7 @@ public class FaFNumberAdding {
 	}
 
 	public Object [] add(DAO dao, Subscriber subscriber, String fafNumber, MessageSource i18n, int language, ProductProperties productProperties, String originOperatorID, boolean replace) {
-		AIRRequest request = new AIRRequest();
+		AIRRequest request = new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold());
 		// Object [] requestStatus = new Object [2];
 
 		if((request.getBalanceAndDate(subscriber.getValue(), 0)) != null) {
@@ -75,7 +76,7 @@ public class FaFNumberAdding {
 						// add fafNumber
 				        if(request.updateFaFList(subscriber.getValue(), FaFAction.ADD, fafList, "eBA")) {
 							(new FaFReportingDAOJdbc(dao)).saveOneFaFReporting(new FaFReporting(0, subscriber.getId(), fafNumber, true, charged ? productProperties.getFaf_chargingAmount() : 0, new Date(), originOperatorID)); // reporting
-							return new Object [] {0, i18n.getMessage("fafAddingRequest.successful", new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+							return new Object [] {0, i18n.getMessage("fafAddingRequest.successful", new Object[] {fafNumber, (language == 2) ? (new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm")).format(new Date()) : (new SimpleDateFormat("dd/MM/yyyy 'a' HH:mm")).format(new Date())}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 				        }
 						else {
 							if(request.isSuccessfully()) {

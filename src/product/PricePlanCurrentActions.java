@@ -21,7 +21,7 @@ public class PricePlanCurrentActions {
 	}
 
 	public String getInfo(MessageSource i18n, ProductProperties productProperties, String msisdn) {
-		AccountDetails accountDetails = getAccountDetails(new AIRRequest(), msisdn);
+		AccountDetails accountDetails = getAccountDetails((new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold())), msisdn);
 		int language = (accountDetails == null) ? 1 : accountDetails.getLanguageIDCurrent();
 
 		return i18n.getMessage("info", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH);
@@ -29,7 +29,7 @@ public class PricePlanCurrentActions {
 
 	public int isActivated(ProductProperties productProperties, DAO dao, String msisdn) {
 		try {
-			AIRRequest request = new AIRRequest();
+			AIRRequest request = new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold());
 
 			if((productProperties.getOffer_id() == 0) || (!(request.getOffers(msisdn, new int[][] {{productProperties.getOffer_id(), productProperties.getOffer_id()}}, false, null, false).isEmpty()))) {
 				if(productProperties.getServiceOfferings_IDs() != null) {
@@ -81,7 +81,7 @@ public class PricePlanCurrentActions {
 
 	@SuppressWarnings("deprecation")
 	public int activation(ProductProperties productProperties, DAO dao, String msisdn, boolean charged, boolean advantages, String originOperatorID) {
-		AIRRequest request = new AIRRequest();
+		AIRRequest request = new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold());
 		if(charged && productProperties.getActivation_chargingAmount() == 0) charged = false;
 
 		HashSet<BalanceAndDate> balances = new HashSet<BalanceAndDate>();
@@ -209,7 +209,7 @@ public class PricePlanCurrentActions {
 	}
 
 	public int deactivation(ProductProperties productProperties, DAO dao, String msisdn, boolean charged) {
-		AIRRequest request = new AIRRequest();
+		AIRRequest request = new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold());
 		if(charged && productProperties.getActivation_chargingAmount() == 0) charged = false;
 
 		HashSet<BalanceAndDate> balances = new HashSet<BalanceAndDate>();

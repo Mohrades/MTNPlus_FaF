@@ -6,6 +6,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -60,7 +63,7 @@ public class ExternalRequestController {
 			return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, Locale.FRENCH));
 		}
 
-		AccountDetails accountDetails = new AIRRequest().getAccountDetails(msisdn);
+		AccountDetails accountDetails = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold())).getAccountDetails(msisdn);
 		int language = (accountDetails == null) ? 1 : accountDetails.getLanguageIDCurrent();
 
 		originOperatorID = originOperatorID.trim();
@@ -79,7 +82,7 @@ public class ExternalRequestController {
 			return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, Locale.FRENCH));
 		}
 
-		AccountDetails accountDetails = new AIRRequest().getAccountDetails(msisdn);
+		AccountDetails accountDetails = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold())).getAccountDetails(msisdn);
 		int language = (accountDetails == null) ? 1 : accountDetails.getLanguageIDCurrent();
 
 		if((new MSISDNValidator()).isFiltered(dao, productProperties, msisdn, "A")) {
@@ -90,15 +93,14 @@ public class ExternalRequestController {
 				if(action.equals("deactivation")) {
 					// deactivation
 					if((int)(requestStatus[0]) == 0) {
-						/*requestStatus = (new PricePlanCurrent()).deactivation(dao, msisdn, (Subscriber)requestStatus[2], i18n, language, productProperties, originOperatorID);
+						requestStatus = (new PricePlanCurrent()).deactivation(dao, msisdn, (Subscriber)requestStatus[2], i18n, language, productProperties, originOperatorID);
 
 						// notification via sms
 						if((int)requestStatus[0] == 0) {
 							requestSubmitSmToSmppConnector(productProperties, (String)requestStatus[1], msisdn, null, null, productProperties.getSms_notifications_header());
 						}
 
-						return callback(msisdn, (int)requestStatus[0], (String)requestStatus[1]);*/
-						return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+						return callback(msisdn, (int)requestStatus[0], (String)requestStatus[1]);
 					}
 					else return callback(msisdn, -1, i18n.getMessage("status.unsuccessful.already", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 				}
@@ -110,15 +112,14 @@ public class ExternalRequestController {
 						requestStatus[0] = productProperties.isDefault_price_plan_deactivated() ? (new DefaultPricePlan()).requestDefaultPricePlanStatus(productProperties, msisdn, originOperatorID) : 0;
 
 						if((int)(requestStatus[0]) == 0) {
-							/*requestStatus = (new PricePlanCurrent()).activation(dao, msisdn, (Subscriber)requestStatus[2], i18n, language, productProperties, originOperatorID);
+							requestStatus = (new PricePlanCurrent()).activation(dao, msisdn, (Subscriber)requestStatus[2], i18n, language, productProperties, originOperatorID);
 
 							// notification via sms
 							if((int)requestStatus[0] == 0) {
 								requestSubmitSmToSmppConnector(productProperties, (String)requestStatus[1], msisdn, null, null, productProperties.getSms_notifications_header());
 							}
 
-							return callback(msisdn, (int)requestStatus[0], (String)requestStatus[1]);*/
-							return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+							return callback(msisdn, (int)requestStatus[0], (String)requestStatus[1]);
 						}
 						else return callback(msisdn, -1, i18n.getMessage("default.price.plan.required", new Object [] {productProperties.getDefault_price_plan()}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 					}
@@ -188,7 +189,7 @@ public class ExternalRequestController {
 			return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, Locale.FRENCH));
 		}
 
-		AccountDetails accountDetails = new AIRRequest().getAccountDetails(msisdn);
+		AccountDetails accountDetails = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold())).getAccountDetails(msisdn);
 		int language = (accountDetails == null) ? 1 : accountDetails.getLanguageIDCurrent();
 
 		originOperatorID = originOperatorID.trim();
@@ -224,16 +225,20 @@ public class ExternalRequestController {
 		// on retourne le ModelAndView
 		return new ModelAndView(new CallbackDataAndView(), modele);
 	}
-	
+
 	public void requestSubmitSmToSmppConnector(ProductProperties productProperties, String messageA, String Anumber, String messageB, String Bnumber, String senderName) {
 		if(senderName != null) {
+			Logger logger = LogManager.getLogger("logging.log4j.SubmitSMLogger");
+
 			if(Anumber != null) {
-				if(Anumber.startsWith(productProperties.getMcc() + "")) Anumber = Anumber.substring((productProperties.getMcc() + "").length());
+				// if(Anumber.startsWith(productProperties.getMcc() + "")) Anumber = Anumber.substring((productProperties.getMcc() + "").length());
 				new SMPPConnector().submitSm(senderName, Anumber, messageA);
+				logger.log(Level.TRACE, "[" + Anumber + "] " + messageA);
 			}
 			if(Bnumber != null) {
-				if(Bnumber.startsWith(productProperties.getMcc() + "")) Bnumber = Bnumber.substring((productProperties.getMcc() + "").length());
+				// if(Bnumber.startsWith(productProperties.getMcc() + "")) Bnumber = Bnumber.substring((productProperties.getMcc() + "").length());
 				new SMPPConnector().submitSm(senderName, Bnumber, messageB);
+				logger.trace("[" + Bnumber + "] " + messageB);
 			}
 		}
 	}
@@ -255,7 +260,7 @@ public class ExternalRequestController {
 	}
 	
 	public ModelAndView handleFaFChangeRequest(int action, String msisdn, String fafNumberOld, String fafNumberNew, String originOperatorID) {
-		AccountDetails accountDetails = new AIRRequest().getAccountDetails(msisdn);
+		AccountDetails accountDetails = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold())).getAccountDetails(msisdn);
 		int language = (accountDetails == null) ? 1 : accountDetails.getLanguageIDCurrent();
 
 		if((new MSISDNValidator()).isFiltered(dao, productProperties, msisdn, "A")) {

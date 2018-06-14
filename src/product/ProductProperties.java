@@ -106,7 +106,15 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 	private List<String> Bnumber_serviceClass_exclude_filter;
 	private List<String> Bnumber_db_exclude_filter;
 
-	private List<String> originOperatorIDs_list;
+	/*private List<String> originOperatorIDs_list;*/
+
+	private List<String> air_hosts;
+	@Value("#{appConfig['air.io.sleep']}")
+	private int air_io_sleep;
+	@Value("#{appConfig['air.io.timeout']}")
+	private int air_io_timeout;
+	@Value("#{appConfig['air.io.threshold']}")
+	private int air_io_threshold;
 
 	@Value("#{appConfig['gsm.mnc']}")
 	public void setMnc(final String gsmmnc) {
@@ -114,6 +122,13 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 			mnc = Splitter.onPattern("[,]").trimResults().omitEmptyStrings().splitToList(gsmmnc);
 		}
 	 }
+
+	@Value("#{appConfig['air.hosts']}")
+	public void setAir_hosts(final String air_hosts) {
+		if(isSet(air_hosts)) {
+			this.air_hosts = Splitter.onPattern("[;]").trimResults().omitEmptyStrings().splitToList(air_hosts);
+		}
+	}
 
 	@Value("#{appConfig['xtra.serviceOfferings.IDs']}")
 	public void setXtra_serviceOfferings_IDs(final String xtra_serviceOfferings_IDs) {
@@ -206,12 +221,12 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 		}
 	}
 
-	@Value("#{appConfig['originOperatorIDs.list']}")
+	/*@Value("#{appConfig['originOperatorIDs.list']}")
 	public void setOriginOperatorIDs_list(final String originOperatorIDs_list) {
 		if(isSet(originOperatorIDs_list)) {
 			this.originOperatorIDs_list = Splitter.onPattern("[,]").trimResults().omitEmptyStrings().splitToList(originOperatorIDs_list);
 		}
-	}
+	}*/
 
 	public short getMcc() {
 		return mcc;
@@ -369,8 +384,24 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 		return Bnumber_db_exclude_filter;
 	}
 
-	public List<String> getOriginOperatorIDs_list() {
+	/*public List<String> getOriginOperatorIDs_list() {
 		return originOperatorIDs_list;
+	}*/
+
+	public List<String> getAir_hosts() {
+		return air_hosts;
+	}
+
+	public int getAir_io_sleep() {
+		return air_io_sleep;
+	}
+
+	public int getAir_io_timeout() {
+		return air_io_timeout;
+	}
+
+	public int getAir_io_threshold() {
+		return air_io_threshold;
 	}
 
 	public boolean isSet(String property_value) {

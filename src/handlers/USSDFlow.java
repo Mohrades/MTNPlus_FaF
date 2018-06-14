@@ -20,6 +20,7 @@ import com.google.common.base.Splitter;
 
 import connexions.AIRRequest;
 import dao.DAO;
+import dao.queries.SubscriberDAOJdbc;
 import domain.models.Subscriber;
 import domain.models.USSDRequest;
 import filter.MSISDNValidator;
@@ -259,7 +260,7 @@ public class USSDFlow {
 
 					// subscriber in price plan current
 					if((int)(requestStatus[0]) == 0) {
-						AIRRequest request = new AIRRequest();
+						AIRRequest request = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold()));
 
 						if(("menu" + transitions).equals("menu.4")) {
 							HashSet<FafInformation> fafNumbers = request.getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList();
@@ -279,7 +280,9 @@ public class USSDFlow {
 						}
 						else if(("menu" + transitions).equals("menu.4.1.1")) {
 							String fafNumber = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(3);
-							modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+							Subscriber subscriber = new SubscriberDAOJdbc(dao).getOneSubscriber(ussd.getMsisdn());
+
+							modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {fafNumber, (((subscriber != null) && (subscriber.isFafChangeRequestChargingEnabled())) ? " (" + productProperties.getFaf_chargingAmount() + "F)" : "")}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 						}
 						else if(("menu" + transitions).equals("menu.4.3")) {
 							modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {getFafNumbersList(request.getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList())}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));

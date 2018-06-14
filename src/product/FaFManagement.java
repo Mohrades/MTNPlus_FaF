@@ -35,7 +35,7 @@ public class FaFManagement {
 	}
 
 	public Object[] getStatus(ProductProperties productProperties, MessageSource i18n, DAO dao, String msisdn, int language) {
-		AIRRequest request = new AIRRequest();
+		AIRRequest request = new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold());
 		HashSet<FafInformation> fafNumbers = request.getFaFList(msisdn, productProperties.getFafRequestedOwner()).getList();
 
 		LinkedList<Long> fafNumbers_copy = new LinkedList<Long>();

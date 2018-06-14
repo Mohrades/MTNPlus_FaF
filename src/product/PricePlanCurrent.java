@@ -36,7 +36,7 @@ public class PricePlanCurrent {
 
 			// initialization the former price plan Status (formerly)
 			if((statusCode == 0) || (statusCode == 1)) {
-				AIRRequest request = new AIRRequest();
+				AIRRequest request = new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold());
 				HashSet<FafInformation> fafNumbers = request.getFaFList(msisdn, productProperties.getFafRequestedOwner()).getList();
 
 				// be sure the initialization of the subscriber status and his previous attached fafNumbers is done with AIR availability

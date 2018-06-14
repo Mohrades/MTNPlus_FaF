@@ -26,7 +26,7 @@ public class FaFNumberDeletion {
 
 	@SuppressWarnings("deprecation")
 	public Object [] delete(DAO dao, Subscriber subscriber, String fafNumber, MessageSource i18n, int language, ProductProperties productProperties, String originOperatorID) {
-		AIRRequest request = new AIRRequest();
+		AIRRequest request = new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold());
 		// Object [] requestStatus = new Object [2];
 
 		if((request.getBalanceAndDate(subscriber.getValue(), 0)) != null) {
@@ -45,7 +45,7 @@ public class FaFNumberDeletion {
 			}
 
 			if(found) {
-				FaFReporting reporting = new FaFReportingDAOJdbc(dao).getLastFaFChangeRequestReporting(subscriber.getId(), fafNumber);
+				FaFReporting reporting = (new FaFReportingDAOJdbc(dao)).getLastFaFChangeRequestReporting(subscriber.getId(), fafNumber);
 
 				if((reporting == null) || (reporting.isFlag())) {
 					Date CREATED_DATE_TIME = null;

@@ -11,6 +11,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.MessageSource;
 
 import com.google.common.base.Splitter;
@@ -41,13 +44,9 @@ public class InputHandler {
 	}
 
 	public void handle(MessageSource i18n, ProductProperties productProperties, Map<String, String> parameters, Map<String, Object> modele, HttpServletRequest request, DAO dao) {
-		if(parameters.get("input").trim().startsWith(productProperties.getSc_secondary() + "")) {
-			parameters.put("input", parameters.get("input").trim().replaceFirst(productProperties.getSc_secondary() + "", productProperties.getSc() + "*4"));
-		}
-
 		USSDRequest ussd = null;
 
-		AccountDetails accountDetails = new AIRRequest().getAccountDetails(parameters.get("msisdn"));
+		AccountDetails accountDetails = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold())).getAccountDetails(parameters.get("msisdn"));
 		int language = (accountDetails == null) ? 1 : accountDetails.getLanguageIDCurrent();
 
 		try {
@@ -55,7 +54,17 @@ public class InputHandler {
 			ussd = new USSDRequestDAOJdbc(dao).getOneUSSD(sessionId, parameters.get("msisdn"));
 
 			if(ussd == null) {
-				USSDService service = new USSDServiceDAOJdbc(dao).getOneUSSDService(productProperties.getSc());
+				USSDService service = null;
+
+				// check if short code is faf portail
+				if(parameters.get("input").trim().startsWith(productProperties.getSc_secondary() + "")) {
+					parameters.put("input", parameters.get("input").trim().replaceFirst(productProperties.getSc_secondary() + "", productProperties.getSc() + "*4"));
+					service = new USSDServiceDAOJdbc(dao).getOneUSSDService(productProperties.getSc_secondary());
+				}
+				else {
+					service = new USSDServiceDAOJdbc(dao).getOneUSSDService(productProperties.getSc());
+				}
+
 				Date now = new Date();
 
 				if((service == null) || (((service.getStart_date() != null) && (now.before(service.getStart_date()))) || ((service.getStop_date() != null) && (now.after(service.getStop_date()))))) {
@@ -152,7 +161,7 @@ public class InputHandler {
 							else if((inputs.size() == 5) && (ussd.getInput().startsWith(short_code + "*4*3")) && (ussd.getInput().endsWith("*1"))) {
 								int indexOld = Integer.parseInt(Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(3));
 								HashSet<Integer> indexes = new HashSet<Integer>(); indexes.add(indexOld);
-								String fafNumberOld = (getFaFNumbers((new AIRRequest()).getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList(), productProperties, indexes)).get(indexOld);
+								String fafNumberOld = (getFaFNumbers(((new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold()))).getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList(), productProperties, indexes)).get(indexOld);
 
 								if(fafNumberOld == null) endStep(dao, ussd, modele, productProperties, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH), null, null, null, null);
 								else handleFaFChangeRequest(dao, ussd, 3, fafNumberOld, null, i18n, language, productProperties, modele);
@@ -161,7 +170,7 @@ public class InputHandler {
 							else if((inputs.size() == 6) && ((ussd.getInput().startsWith(short_code + "*4*2")) && (ussd.getInput().endsWith("*1")))) {
 								int indexOld = Integer.parseInt(Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(3));
 								HashSet<Integer> indexes = new HashSet<Integer>(); indexes.add(indexOld);
-								HashMap<Integer, String> result = (getFaFNumbers((new AIRRequest()).getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList(), productProperties, indexes));
+								HashMap<Integer, String> result = (getFaFNumbers(((new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold()))).getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList(), productProperties, indexes));
 								String fafNumberOld = result.get(indexOld);
 								String fafNumberNew = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(4);
 
@@ -220,13 +229,18 @@ public class InputHandler {
 		modele.put("message", messageA);
 
 		if(senderName != null) {
+			Logger logger = LogManager.getLogger("logging.log4j.SubmitSMLogger");
+			// Logger logger = LogManager.getRootLogger();
+
 			if(Anumber != null) {
-				if(Anumber.startsWith(productProperties.getMcc() + "")) Anumber = Anumber.substring((productProperties.getMcc() + "").length());
+				// if(Anumber.startsWith(productProperties.getMcc() + "")) Anumber = Anumber.substring((productProperties.getMcc() + "").length());
 				new SMPPConnector().submitSm(senderName, Anumber, messageA);
+				logger.trace("[" + Anumber + "] " + messageA);
 			}
 			if(Bnumber != null) {
-				if(Bnumber.startsWith(productProperties.getMcc() + "")) Bnumber = Bnumber.substring((productProperties.getMcc() + "").length());
+				// if(Bnumber.startsWith(productProperties.getMcc() + "")) Bnumber = Bnumber.substring((productProperties.getMcc() + "").length());
 				new SMPPConnector().submitSm(senderName, Bnumber, messageB);
+				logger.log(Level.TRACE, "[" + Bnumber + "] " + messageB);
 			}
 		}
 	}
