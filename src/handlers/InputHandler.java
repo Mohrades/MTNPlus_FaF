@@ -26,13 +26,14 @@ import dao.queries.USSDServiceDAOJdbc;
 import domain.models.Subscriber;
 import domain.models.USSDRequest;
 import domain.models.USSDService;
+import exceptions.AirAvailabilityException;
 import filter.MSISDNValidator;
-import product.DefaultPricePlan;
 import product.FaFManagement;
 import product.PricePlanCurrent;
 import product.PricePlanCurrentActions;
 import product.ProductProperties;
 import product.USSDMenu;
+import tools.DefaultPricePlan;
 import tools.SMPPConnector;
 import util.AccountDetails;
 import util.FafInformation;
@@ -45,11 +46,17 @@ public class InputHandler {
 
 	public void handle(MessageSource i18n, ProductProperties productProperties, Map<String, String> parameters, Map<String, Object> modele, HttpServletRequest request, DAO dao) {
 		USSDRequest ussd = null;
-
-		AccountDetails accountDetails = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold())).getAccountDetails(parameters.get("msisdn"));
-		int language = (accountDetails == null) ? 1 : accountDetails.getLanguageIDCurrent();
+		int language = 1;
 
 		try {
+			if(productProperties.getAir_preferred_host() != -1) {
+				AccountDetails accountDetails = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold(), productProperties.getAir_preferred_host())).getAccountDetails(parameters.get("msisdn"));
+				language = (accountDetails == null) ? 1 : accountDetails.getLanguageIDCurrent();
+			}
+			else {
+				throw new AirAvailabilityException();
+			}
+
 			long sessionId = Long.parseLong(parameters.get("sessionid"));
 			ussd = new USSDRequestDAOJdbc(dao).getOneUSSD(sessionId, parameters.get("msisdn"));
 
@@ -161,7 +168,7 @@ public class InputHandler {
 							else if((inputs.size() == 5) && (ussd.getInput().startsWith(short_code + "*4*3")) && (ussd.getInput().endsWith("*1"))) {
 								int indexOld = Integer.parseInt(Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(3));
 								HashSet<Integer> indexes = new HashSet<Integer>(); indexes.add(indexOld);
-								String fafNumberOld = (getFaFNumbers(((new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold()))).getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList(), productProperties, indexes)).get(indexOld);
+								String fafNumberOld = (getFaFNumbers(((new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold(), productProperties.getAir_preferred_host()))).getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList(), productProperties, indexes)).get(indexOld);
 
 								if(fafNumberOld == null) endStep(dao, ussd, modele, productProperties, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH), null, null, null, null);
 								else handleFaFChangeRequest(dao, ussd, 3, fafNumberOld, null, i18n, language, productProperties, modele);
@@ -170,7 +177,7 @@ public class InputHandler {
 							else if((inputs.size() == 6) && ((ussd.getInput().startsWith(short_code + "*4*2")) && (ussd.getInput().endsWith("*1")))) {
 								int indexOld = Integer.parseInt(Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(3));
 								HashSet<Integer> indexes = new HashSet<Integer>(); indexes.add(indexOld);
-								HashMap<Integer, String> result = (getFaFNumbers(((new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold()))).getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList(), productProperties, indexes));
+								HashMap<Integer, String> result = (getFaFNumbers(((new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold(), productProperties.getAir_preferred_host()))).getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList(), productProperties, indexes));
 								String fafNumberOld = result.get(indexOld);
 								String fafNumberNew = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(4);
 
@@ -209,10 +216,13 @@ public class InputHandler {
 			}
 
 		} catch(NullPointerException ex) {
-			endStep(dao, ussd, modele, productProperties, i18n.getMessage("service.internal.error", null, null, null), null, null, null, null);
+			endStep(dao, ussd, modele, productProperties, i18n.getMessage("service.internal.error", null, null, Locale.FRENCH), null, null, null, null);
+
+		} catch(AirAvailabilityException ex) {
+			endStep(dao, ussd, modele, productProperties, i18n.getMessage("service.internal.error", null, null, Locale.FRENCH), null, null, null, null);
 
 		} catch(Throwable th) {
-			endStep(dao, ussd, modele, productProperties, i18n.getMessage("service.internal.error", null, null, null), null, null, null, null);
+			endStep(dao, ussd, modele, productProperties, i18n.getMessage("service.internal.error", null, null, Locale.FRENCH), null, null, null, null);
 		}
 	}
 

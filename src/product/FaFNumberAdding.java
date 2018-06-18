@@ -28,7 +28,7 @@ public class FaFNumberAdding {
 	}
 
 	public Object [] add(DAO dao, Subscriber subscriber, String fafNumber, MessageSource i18n, int language, ProductProperties productProperties, String originOperatorID, boolean replace) {
-		AIRRequest request = new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold());
+		AIRRequest request = new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold(), productProperties.getAir_preferred_host());
 		// Object [] requestStatus = new Object [2];
 
 		if((request.getBalanceAndDate(subscriber.getValue(), 0)) != null) {

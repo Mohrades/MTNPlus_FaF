@@ -260,7 +260,7 @@ public class USSDFlow {
 
 					// subscriber in price plan current
 					if((int)(requestStatus[0]) == 0) {
-						AIRRequest request = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold()));
+						AIRRequest request = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold(), productProperties.getAir_preferred_host()));
 
 						if(("menu" + transitions).equals("menu.4")) {
 							HashSet<FafInformation> fafNumbers = request.getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList();

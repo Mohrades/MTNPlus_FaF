@@ -36,7 +36,7 @@ public class PricePlanCurrent {
 
 			// initialization the former price plan Status (formerly)
 			if((statusCode == 0) || (statusCode == 1)) {
-				AIRRequest request = new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold());
+				AIRRequest request = new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold(), productProperties.getAir_preferred_host());
 				HashSet<FafInformation> fafNumbers = request.getFaFList(msisdn, productProperties.getFafRequestedOwner()).getList();
 
 				// be sure the initialization of the subscriber status and his previous attached fafNumbers is done with AIR availability
@@ -76,14 +76,16 @@ public class PricePlanCurrent {
 
 		String message = null;
 
-		if(statusCode == 0) {
-			message = i18n.getMessage("status.successful", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH);
-		}
-		else if(statusCode == 1) {
-			message = i18n.getMessage("status.failed", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH);
-		}
-		else {
-			message = i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH);
+		if(i18n != null) {
+			if(statusCode == 0) {
+				message = i18n.getMessage("status.successful", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH);
+			}
+			else if(statusCode == 1) {
+				message = i18n.getMessage("status.failed", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH);
+			}
+			else {
+				message = i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH);
+			}
 		}
 
 		return new Object [] {statusCode, message, subscriber};

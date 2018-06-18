@@ -23,11 +23,11 @@ import dao.DAO;
 import dao.queries.SubscriberDAOJdbc;
 import domain.models.Subscriber;
 import filter.MSISDNValidator;
-import product.DefaultPricePlan;
 import product.FaFManagement;
 import product.PricePlanCurrent;
 import product.PricePlanCurrentActions;
 import product.ProductProperties;
+import tools.DefaultPricePlan;
 import tools.SMPPConnector;
 import util.AccountDetails;
 
@@ -47,7 +47,7 @@ public class ExternalRequestController {
 	public ModelAndView handlePricePlanInfoRequest(HttpServletRequest request, @RequestParam(value="msisdn", required=false, defaultValue = "") String msisdn) throws Exception {
 		String originOperatorID = request.getParameter("originOperatorID");
 
-		if((originOperatorID == null) || (originOperatorID.trim().length() == 0) || (msisdn == null) || (!(new MSISDNValidator()).onNet(productProperties, msisdn))) {
+		if((productProperties.getAir_preferred_host() == -1) || (originOperatorID == null) || (originOperatorID.trim().length() == 0) || (msisdn == null) || (!(new MSISDNValidator()).onNet(productProperties, msisdn))) {
 			return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, Locale.FRENCH));
 		}
 
@@ -59,11 +59,11 @@ public class ExternalRequestController {
 		String msisdn = request.getParameter("msisdn");
 		String originOperatorID = request.getParameter("originOperatorID");
 
-		if((originOperatorID == null) || (originOperatorID.trim().length() == 0) || (msisdn == null) || (!(new MSISDNValidator()).onNet(productProperties, msisdn))) {
+		if((productProperties.getAir_preferred_host() == -1) || (originOperatorID == null) || (originOperatorID.trim().length() == 0) || (msisdn == null) || (!(new MSISDNValidator()).onNet(productProperties, msisdn))) {
 			return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, Locale.FRENCH));
 		}
 
-		AccountDetails accountDetails = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold())).getAccountDetails(msisdn);
+		AccountDetails accountDetails = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold(), productProperties.getAir_preferred_host())).getAccountDetails(msisdn);
 		int language = (accountDetails == null) ? 1 : accountDetails.getLanguageIDCurrent();
 
 		originOperatorID = originOperatorID.trim();
@@ -78,11 +78,11 @@ public class ExternalRequestController {
 		String action = request.getParameter("action");
 		String originOperatorID = request.getParameter("originOperatorID");
 
-		if((originOperatorID == null) || (originOperatorID.trim().length() == 0) || (action == null) || (!(action.equals("activation") || action.equals("deactivation"))) || (msisdn == null) || (msisdn_confirmation == null) || (!msisdn.equals(msisdn_confirmation)) || (!(new MSISDNValidator()).onNet(productProperties, msisdn))) {
+		if((productProperties.getAir_preferred_host() == -1) || (originOperatorID == null) || (originOperatorID.trim().length() == 0) || (action == null) || (!(action.equals("activation") || action.equals("deactivation"))) || (msisdn == null) || (msisdn_confirmation == null) || (!msisdn.equals(msisdn_confirmation)) || (!(new MSISDNValidator()).onNet(productProperties, msisdn))) {
 			return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, Locale.FRENCH));
 		}
 
-		AccountDetails accountDetails = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold())).getAccountDetails(msisdn);
+		AccountDetails accountDetails = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold(), productProperties.getAir_preferred_host())).getAccountDetails(msisdn);
 		int language = (accountDetails == null) ? 1 : accountDetails.getLanguageIDCurrent();
 
 		if((new MSISDNValidator()).isFiltered(dao, productProperties, msisdn, "A")) {
@@ -102,11 +102,11 @@ public class ExternalRequestController {
 
 						return callback(msisdn, (int)requestStatus[0], (String)requestStatus[1]);
 					}
-					else return callback(msisdn, -1, i18n.getMessage("status.unsuccessful.already", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+					else return callback(msisdn, 1, i18n.getMessage("status.unsuccessful.already", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 				}
 				else if(action.equals("activation")) {
 					// activation
-					if((int)(requestStatus[0]) == 0) return callback(msisdn, -1, i18n.getMessage("status.successful.already", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+					if((int)(requestStatus[0]) == 0) return callback(msisdn, +1, i18n.getMessage("status.successful.already", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 					else {
 						// check msisdn is in default price plan
 						requestStatus[0] = productProperties.isDefault_price_plan_deactivated() ? (new DefaultPricePlan()).requestDefaultPricePlanStatus(productProperties, msisdn, originOperatorID) : 0;
@@ -139,7 +139,7 @@ public class ExternalRequestController {
 	public ModelAndView handleFaFAddingRequest(HttpServletRequest request, @RequestParam("msisdn") String msisdn, @PathVariable("msisdn") String msisdn_confirmation) throws Exception {
 		String fafNumberNew = request.getParameter("fafNumberNew");
 
-		if((msisdn == null) || (msisdn_confirmation == null) || (!msisdn.equals(msisdn_confirmation)) || (!(new MSISDNValidator()).onNet(productProperties, msisdn))) {
+		if((productProperties.getAir_preferred_host() == -1) || (msisdn == null) || (msisdn_confirmation == null) || (!msisdn.equals(msisdn_confirmation)) || (!(new MSISDNValidator()).onNet(productProperties, msisdn))) {
 			return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, Locale.FRENCH));
 		}
 
@@ -154,7 +154,7 @@ public class ExternalRequestController {
 	public ModelAndView handleFaFDeleteRequest(HttpServletRequest request, @RequestParam("msisdn") String msisdn, @PathVariable("msisdn") String msisdn_confirmation) throws Exception {
 		String fafNumberOld = request.getParameter("fafNumberOld");
 
-		if((msisdn == null) || (msisdn_confirmation == null) || (!msisdn.equals(msisdn_confirmation)) || (!(new MSISDNValidator()).onNet(productProperties, msisdn))) {
+		if((productProperties.getAir_preferred_host() == -1) || (msisdn == null) || (msisdn_confirmation == null) || (!msisdn.equals(msisdn_confirmation)) || (!(new MSISDNValidator()).onNet(productProperties, msisdn))) {
 			return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, Locale.FRENCH));
 		}
 
@@ -170,7 +170,7 @@ public class ExternalRequestController {
 		String fafNumberOld = request.getParameter("fafNumberOld");
 		String fafNumberNew = request.getParameter("fafNumberNew");
 
-		if((msisdn == null) || (msisdn_confirmation == null) || (!msisdn.equals(msisdn_confirmation)) || (!(new MSISDNValidator()).onNet(productProperties, msisdn))) {
+		if((productProperties.getAir_preferred_host() == -1) || (msisdn == null) || (msisdn_confirmation == null) || (!msisdn.equals(msisdn_confirmation)) || (!(new MSISDNValidator()).onNet(productProperties, msisdn))) {
 			return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, Locale.FRENCH));
 		}
 
@@ -185,11 +185,11 @@ public class ExternalRequestController {
 	public ModelAndView handleFaFStatusRequest(HttpServletRequest request, @RequestParam("msisdn") String msisdn) throws Exception {
 		String originOperatorID = request.getParameter("originOperatorID");
 
-		if((originOperatorID == null) || (originOperatorID.trim().length() == 0) || (msisdn == null) || (!(new MSISDNValidator()).onNet(productProperties, msisdn))) {
+		if((productProperties.getAir_preferred_host() == -1) || (originOperatorID == null) || (originOperatorID.trim().length() == 0) || (msisdn == null) || (!(new MSISDNValidator()).onNet(productProperties, msisdn))) {
 			return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, Locale.FRENCH));
 		}
 
-		AccountDetails accountDetails = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold())).getAccountDetails(msisdn);
+		AccountDetails accountDetails = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold(), productProperties.getAir_preferred_host())).getAccountDetails(msisdn);
 		int language = (accountDetails == null) ? 1 : accountDetails.getLanguageIDCurrent();
 
 		originOperatorID = originOperatorID.trim();
@@ -260,7 +260,7 @@ public class ExternalRequestController {
 	}
 	
 	public ModelAndView handleFaFChangeRequest(int action, String msisdn, String fafNumberOld, String fafNumberNew, String originOperatorID) {
-		AccountDetails accountDetails = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold())).getAccountDetails(msisdn);
+		AccountDetails accountDetails = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold(), productProperties.getAir_preferred_host())).getAccountDetails(msisdn);
 		int language = (accountDetails == null) ? 1 : accountDetails.getLanguageIDCurrent();
 
 		if((new MSISDNValidator()).isFiltered(dao, productProperties, msisdn, "A")) {
