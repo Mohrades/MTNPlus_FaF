@@ -84,7 +84,7 @@ public class FaFNumberReplacing {
 						requestStatus  = (new FaFNumberDeletion()).delete(dao, subscriber, fafNumberOld, i18n, language, productProperties, originOperatorID);
 
 						if(((int)requestStatus[0] == 0)) {
-							return new Object [] {0, i18n.getMessage("fafChangeRequest.successful", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+							return new Object [] {0, i18n.getMessage("fafChangeRequest.successful", new Object[] {(((subscriber != null) && (subscriber.isFafChangeRequestChargingEnabled())) ? ((productProperties.getFaf_chargingAmount()/100) + "") : "0")}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 						}
 						else {
 							if((int)requestStatus[0] == 1) {

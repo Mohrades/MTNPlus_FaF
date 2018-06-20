@@ -282,7 +282,7 @@ public class USSDFlow {
 							String fafNumber = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(3);
 							Subscriber subscriber = new SubscriberDAOJdbc(dao).getOneSubscriber(ussd.getMsisdn());
 
-							modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {fafNumber, (((subscriber != null) && (subscriber.isFafChangeRequestChargingEnabled())) ? " (" + productProperties.getFaf_chargingAmount() + "F)" : "")}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+							modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {fafNumber, (((subscriber != null) && (subscriber.isFafChangeRequestChargingEnabled())) ? " (" + (productProperties.getFaf_chargingAmount()/100) + "F)" : "")}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 						}
 						else if(("menu" + transitions).equals("menu.4.3")) {
 							modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {getFafNumbersList(request.getFaFList(ussd.getMsisdn(), productProperties.getFafRequestedOwner()).getList())}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
@@ -327,7 +327,10 @@ public class USSDFlow {
 								modele.put("status", -1);
 								modele.put("message", i18n.getMessage("integer.max", new Object[] {fafNumbers.size()}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 							}
-							else modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {fafNumberOld, fafNumberNew}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));							
+							else {
+								Subscriber subscriber = new SubscriberDAOJdbc(dao).getOneSubscriber(ussd.getMsisdn());
+								modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {fafNumberOld, fafNumberNew, (((subscriber != null) && (subscriber.isFafChangeRequestChargingEnabled())) ? " (" + (productProperties.getFaf_chargingAmount()/100) + "F)" : "")}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));							
+							}
 						}
 						else modele.put("message", i18n.getMessage("menu" + transitions, null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 					}

@@ -18,7 +18,12 @@ import product.ProductProperties;
 public class ExternalRequestInterceptor implements HandlerInterceptor {
 	
 	private ProductProperties productProperties;
+
 	private DAO dao;
+
+	public ExternalRequestInterceptor() {
+		
+	}
 
 	public ProductProperties getProductProperties() {
 		return productProperties;

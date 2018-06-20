@@ -51,7 +51,7 @@ public class FaFNumberDeletion {
 					Date CREATED_DATE_TIME = null;
 					if((reporting != null) && (reporting.getCreated_date_time() != null)) {
 						CREATED_DATE_TIME = reporting.getCreated_date_time();
-						CREATED_DATE_TIME.setDate(CREATED_DATE_TIME.getDate() + productProperties.getFafChangeRequestAllowedDays());						
+						CREATED_DATE_TIME.setDate(CREATED_DATE_TIME.getDate() + productProperties.getFafChangeRequestAllowedDays());
 					}
 
 					// check fafNumberOld is older than FafChangeRequest startDate
