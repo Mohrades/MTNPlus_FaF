@@ -89,6 +89,9 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 
 	private List<String> serviceOfferings_IDs;
 	private List<String> serviceOfferings_activeFlags;
+
+	@Value("#{appConfig['community.id']}")
+	private int community_id;
 	
 	@Value("#{appConfig['offer.id']}")
 	private int offer_id;
@@ -119,6 +122,17 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 	private String air_test_connection_msisdn;
 	@Value("#{appConfig['air.preferred.host']}")
 	private byte air_preferred_host;
+
+	@Value("#{appConfig['bonus.sms.onNet.da']}")
+	private int bonus_sms_onNet_da;
+	@Value("#{appConfig['bonus.sms.onNet.fees']}")
+	private long bonus_sms_onNet_fees;
+	@Value("#{appConfig['bonus.sms.offNet.da']}")
+	private int bonus_sms_offNet_da;
+	@Value("#{appConfig['bonus.sms.offNet.fees']}")
+	private long bonus_sms_offNet_fees;
+	@Value("#{appConfig['bonus.sms.threshold']}")
+	private int bonus_sms_threshold;
 
 	@Value("#{appConfig['gsm.mnc']}")
 	public void setMnc(final String gsmmnc) {
@@ -260,6 +274,26 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 		return msisdn_length;
 	}
 
+	public int getBonus_sms_onNet_da() {
+		return bonus_sms_onNet_da;
+	}
+
+	public long getBonus_sms_onNet_fees() {
+		return bonus_sms_onNet_fees;
+	}
+
+	public int getBonus_sms_offNet_da() {
+		return bonus_sms_offNet_da;
+	}
+
+	public long getBonus_sms_offNet_fees() {
+		return bonus_sms_offNet_fees;
+	}
+
+	public int getBonus_sms_threshold() {
+		return bonus_sms_threshold;
+	}
+
 	public List<String> getXtra_serviceOfferings_IDs() {
 		return xtra_serviceOfferings_IDs;
 	}
@@ -346,6 +380,10 @@ public class ProductProperties implements InitializingBean, DisposableBean {
 
 	public List<String> getServiceOfferings_activeFlags() {
 		return serviceOfferings_activeFlags;
+	}
+
+	public int getCommunity_id() {
+		return community_id;
 	}
 
 	public int getOffer_id() {

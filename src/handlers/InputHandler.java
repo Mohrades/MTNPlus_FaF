@@ -112,7 +112,7 @@ public class InputHandler {
 						List<String> inputs = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput());
 
 						if(inputs.size() == 2) {
-							Object [] requestStatus = (new PricePlanCurrent()).getStatus(productProperties, i18n, dao, ussd.getMsisdn(), language);
+							Object [] requestStatus = (new PricePlanCurrent()).getStatus(productProperties, i18n, dao, ussd.getMsisdn(), language, false);
 
 							if((int)(requestStatus[0]) >= 0) {
 								/*if(false && ussd.getInput().endsWith("*0")) {*/
@@ -227,7 +227,7 @@ public class InputHandler {
 	}
 
 	public void pricePlanCurrentStatus(MessageSource i18n, int language, ProductProperties productProperties, DAO dao, USSDRequest ussd, Map<String, Object> modele) {
-		endStep(dao, ussd, modele, productProperties, (String)(((new PricePlanCurrent()).getStatus(productProperties, i18n, dao, ussd.getMsisdn(), language))[1]), null, null, null, null);
+		endStep(dao, ussd, modele, productProperties, (String)(((new PricePlanCurrent()).getStatus(productProperties, i18n, dao, ussd.getMsisdn(), language, true))[1]), null, null, null, null);
 	}
 
 	public void endStep(DAO dao, USSDRequest ussd, Map<String, Object> modele, ProductProperties productProperties, String messageA, String Anumber, String messageB, String Bnumber, String senderName) {
@@ -285,7 +285,7 @@ public class InputHandler {
 	}
 	
 	public void handleFaFChangeRequest(DAO dao, USSDRequest ussd, int action, String fafNumberOld, String fafNumberNew, MessageSource i18n, int language, ProductProperties productProperties, Map<String, Object> modele) {
-		Object [] requestStatus = (new PricePlanCurrent()).getStatus(productProperties, i18n, dao, ussd.getMsisdn(), language);
+		Object [] requestStatus = (new PricePlanCurrent()).getStatus(productProperties, i18n, dao, ussd.getMsisdn(), language, false);
 
 		if((int)(requestStatus[0]) == 0) {
 			Subscriber subscriber = (Subscriber)requestStatus[2];

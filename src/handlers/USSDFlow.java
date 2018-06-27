@@ -256,7 +256,7 @@ public class USSDFlow {
 				/*if(transitions.length() == 0) modele.put("message", i18n.getMessage("menu", null, null, null));
 				else modele.put("message", i18n.getMessage("menu." + transitions, null, null, null));*/
 				if(("menu" + transitions).startsWith("menu.4")) {
-					Object [] requestStatus = (new PricePlanCurrent()).getStatus(productProperties, i18n, dao, ussd.getMsisdn(), language);
+					Object [] requestStatus = (new PricePlanCurrent()).getStatus(productProperties, i18n, dao, ussd.getMsisdn(), language, false);
 
 					// subscriber in price plan current
 					if((int)(requestStatus[0]) == 0) {

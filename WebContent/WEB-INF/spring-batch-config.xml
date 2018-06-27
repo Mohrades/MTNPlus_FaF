@@ -12,7 +12,7 @@
 
 	<task:annotation-driven executor="batchTaskExecutor" scheduler="scheduling" exception-handler="myAsyncUncaughtExceptionHandler" />
 
-	<bean id="myAsyncUncaughtExceptionHandler" class="jobs.MyAsyncUncaughtExceptionHandler" />
+	<bean id="myAsyncUncaughtExceptionHandler" class="exceptions.MyAsyncUncaughtExceptionHandler" />
 
 	<!-- By default when specifying @Async on a method, the executor that will be used is the one supplied to the 'annotation-driven' -->
 	<!-- the value attribute of the @Async annotation can be used when needing to indicate that an executor other than the default should be used -->
@@ -27,7 +27,8 @@
 		<!-- java.lang.IllegalArgumentException: Cron expression must consist of 6 fields (found 7 in "0 00 0 1 APR,MAY,JUN ? 2018") -->
 
   		<!-- <task:scheduled ref="jobs" method="clear_ussd" cron="0 */5 * ? * *" /> -->
-  		<task:scheduled ref="jobs" method="clear_ussd" fixed-delay="900000" />
+  		<!-- <task:scheduled ref="jobs" method="clear_ussd" fixed-delay="900000" /> -->
+  		<task:scheduled ref="jobs" method="clear_ussd" fixed-delay="720000" />
   		<!-- <task:scheduled ref="jobs" method="clear_ussd" fixed-rate="300000" /> -->
 
 		<!-- <task:scheduled ref="jobs" method="clean_delivery_notification_for_sms" cron="0 30 01 ? * *" /> -->
@@ -41,7 +42,13 @@
 
 	<batch:job id="cleanExpiredUssdRequestJob">
 	  <batch:step id="cleanUssdRequest">
-	  	<batch:tasklet ref="cleanExpiredUssdRequestTasklet" transaction-manager="transactionManager" />
+	  	<!-- <batch:tasklet ref="cleanExpiredUssdRequestTasklet" transaction-manager="transactionManager" /> -->
+	  	<batch:tasklet transaction-manager="transactionManager">
+          <bean class="jobs.CleanExpiredUssdRequestTasklet">
+     		<property name="productProperties" ref="productProperties" />
+     		<property name="dao" ref="dao" />
+     	  </bean>
+	  	</batch:tasklet>
 	  </batch:step>
 	</batch:job>
 

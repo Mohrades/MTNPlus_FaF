@@ -55,7 +55,7 @@ public class ExternalRequestController {
 	}
 
 	@RequestMapping(value = "/status", params={"authentication=true", "originOperatorID"}, produces = "text/xml;charset=UTF-8")
-	public ModelAndView handlePricePlanStatusRequest(HttpServletRequest request) throws Exception {
+	public ModelAndView handlePricePlanStatusRequest(HttpServletRequest request, @RequestParam(value="bonus", required=false, defaultValue = "true") boolean bonus) throws Exception {
 		String msisdn = request.getParameter("msisdn");
 		String originOperatorID = request.getParameter("originOperatorID");
 
@@ -68,7 +68,7 @@ public class ExternalRequestController {
 
 		originOperatorID = originOperatorID.trim();
 
-		Object[] status = (new PricePlanCurrent()).getStatus(productProperties, i18n, dao, msisdn, language);
+		Object[] status = (new PricePlanCurrent()).getStatus(productProperties, i18n, dao, msisdn, language, bonus);
 		return callback(msisdn, (int)(status[0]), (String)(status[1]));
 	}
 
@@ -87,7 +87,7 @@ public class ExternalRequestController {
 
 		if((new MSISDNValidator()).isFiltered(dao, productProperties, msisdn, "A")) {
 			originOperatorID = originOperatorID.trim();
-			Object [] requestStatus = (new PricePlanCurrent()).getStatus(productProperties, i18n, dao, msisdn, language);
+			Object [] requestStatus = (new PricePlanCurrent()).getStatus(productProperties, i18n, dao, msisdn, language, false);
 
 			if((int)(requestStatus[0]) >= 0) {
 				if(action.equals("deactivation")) {
@@ -265,7 +265,7 @@ public class ExternalRequestController {
 
 		if((new MSISDNValidator()).isFiltered(dao, productProperties, msisdn, "A")) {
 			originOperatorID = originOperatorID.trim();
-			Object [] requestStatus = (new PricePlanCurrent()).getStatus(productProperties, i18n, dao, msisdn, language);
+			Object [] requestStatus = (new PricePlanCurrent()).getStatus(productProperties, i18n, dao, msisdn, language, false);
 
 			if((int)(requestStatus[0]) == 0) {
 				Subscriber subscriber = (Subscriber)requestStatus[2];
