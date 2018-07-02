@@ -9,8 +9,8 @@ import org.springframework.context.MessageSource;
 
 import connexions.AIRRequest;
 import dao.DAO;
-import dao.queries.FaFReportingDAOJdbc;
-import dao.queries.RollBackDAOJdbc;
+import dao.queries.JdbcFaFReportingDao;
+import dao.queries.JdbcRollBackDao;
 import domain.models.FaFReporting;
 import domain.models.RollBack;
 import domain.models.Subscriber;
@@ -68,7 +68,7 @@ public class FaFNumberReplacing {
 			}
 
 			// check fafNumberOld is older than FafChangeRequest startDate
-			FaFReporting reporting = new FaFReportingDAOJdbc(dao).getLastFaFChangeRequestReporting(subscriber.getId(), fafNumberOld);
+			FaFReporting reporting = new JdbcFaFReportingDao(dao).getLastFaFChangeRequestReporting(subscriber.getId(), fafNumberOld);
 
 			if((reporting == null) || (reporting.isFlag())) {
 				Date CREATED_DATE_TIME = null;
@@ -91,10 +91,10 @@ public class FaFNumberReplacing {
 						}
 						else {
 							if((int)requestStatus[0] == 1) {
-								new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, 1, 4, subscriber.getValue(), fafNumberOld, null));
+								new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, 1, 4, subscriber.getValue(), fafNumberOld, null));
 							}
 							else {
-								new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -1, 4, subscriber.getValue(), fafNumberOld, null));
+								new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -1, 4, subscriber.getValue(), fafNumberOld, null));
 							}
 
 							return new Object [] {(int)requestStatus[0], ((int)requestStatus[0] == -1) ? i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH) : i18n.getMessage("fafChangeRequest.failed", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};

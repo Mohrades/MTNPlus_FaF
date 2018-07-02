@@ -20,7 +20,7 @@ import com.google.common.base.Splitter;
 
 import connexions.AIRRequest;
 import dao.DAO;
-import dao.queries.SubscriberDAOJdbc;
+import dao.queries.JdbcSubscriberDao;
 import domain.models.Subscriber;
 import domain.models.USSDRequest;
 import filter.MSISDNValidator;
@@ -280,7 +280,7 @@ public class USSDFlow {
 						}
 						else if(("menu" + transitions).equals("menu.4.1.1")) {
 							String fafNumber = Splitter.onPattern("[*]").trimResults().omitEmptyStrings().splitToList(ussd.getInput()).get(3);
-							Subscriber subscriber = new SubscriberDAOJdbc(dao).getOneSubscriber(ussd.getMsisdn());
+							Subscriber subscriber = new JdbcSubscriberDao(dao).getOneSubscriber(ussd.getMsisdn());
 
 							modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {fafNumber, (((subscriber != null) && (subscriber.isFafChangeRequestChargingEnabled())) ? " (" + (productProperties.getFaf_chargingAmount()/100) + "F)" : "")}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 						}
@@ -328,7 +328,7 @@ public class USSDFlow {
 								modele.put("message", i18n.getMessage("integer.max", new Object[] {fafNumbers.size()}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 							}
 							else {
-								Subscriber subscriber = new SubscriberDAOJdbc(dao).getOneSubscriber(ussd.getMsisdn());
+								Subscriber subscriber = new JdbcSubscriberDao(dao).getOneSubscriber(ussd.getMsisdn());
 								modele.put("message", i18n.getMessage("menu" + transitions, new Object[] {fafNumberOld, fafNumberNew, (((subscriber != null) && (subscriber.isFafChangeRequestChargingEnabled())) ? " (" + (productProperties.getFaf_chargingAmount()/100) + "F)" : "")}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));							
 							}
 						}

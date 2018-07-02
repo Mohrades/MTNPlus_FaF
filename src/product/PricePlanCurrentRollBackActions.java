@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 import connexions.AIRRequest;
 import dao.DAO;
-import dao.queries.RollBackDAOJdbc;
+import dao.queries.JdbcRollBackDao;
 import domain.models.RollBack;
 import util.BalanceAndDate;
 import util.DedicatedAccount;
@@ -20,7 +20,6 @@ public class PricePlanCurrentRollBackActions {
 
 	}
 
-	@SuppressWarnings("deprecation")
 	public int activation(int step, ProductProperties productProperties, DAO dao, String msisdn, boolean charged) {
 		AIRRequest request = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold(), productProperties.getAir_preferred_host()));
 
@@ -44,7 +43,7 @@ public class PricePlanCurrentRollBackActions {
 		} catch(Throwable th) {
 			if((step >= 4) && (productProperties.getCommunity_id() != 0)) {
 				// save rollback
-				new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -4, 1, msisdn, msisdn, null));
+				new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -4, 1, msisdn, msisdn, null));
 
 				if(request.isSuccessfully()) ;
 				else {
@@ -91,10 +90,10 @@ public class PricePlanCurrentRollBackActions {
 					}
 					else {
 						if(request.isSuccessfully()) {
-							new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, 1, 1, msisdn, msisdn, null));
+							new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, 1, 1, msisdn, msisdn, null));
 						}
 						else {
-							new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -1, 1, msisdn, msisdn, null));
+							new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -1, 1, msisdn, msisdn, null));
 						}
 
 						return request.isSuccessfully() ? 1 : -1;					
@@ -102,10 +101,10 @@ public class PricePlanCurrentRollBackActions {
 				}
 				else {
 					if(request.isSuccessfully()) {
-						new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, 2, 1, msisdn, msisdn, null));
+						new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, 2, 1, msisdn, msisdn, null));
 					}
 					else {
-						new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -2, 1, msisdn, msisdn, null));
+						new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -2, 1, msisdn, msisdn, null));
 					}
 
 					return request.isSuccessfully() ? 1 : -1;				
@@ -113,10 +112,10 @@ public class PricePlanCurrentRollBackActions {
 			}
 			else {
 				if(request.isSuccessfully()) {
-					new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, 3, 1, msisdn, msisdn, null));
+					new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, 3, 1, msisdn, msisdn, null));
 				}
 				else {
-					new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -3, 1, msisdn, msisdn, null));
+					new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -3, 1, msisdn, msisdn, null));
 				}
 
 				return request.isSuccessfully() ? 1 : -1;
@@ -124,17 +123,16 @@ public class PricePlanCurrentRollBackActions {
 		}
 		else {
 			if(request.isSuccessfully()) {
-				new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, 4, 1, msisdn, msisdn, null));
+				new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, 4, 1, msisdn, msisdn, null));
 			}
 			else {
-				new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -4, 1, msisdn, msisdn, null));
+				new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -4, 1, msisdn, msisdn, null));
 			}
 
 			return request.isSuccessfully() ? 1 : -1;
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public int deactivation(int step, ProductProperties productProperties, DAO dao, String msisdn, boolean charged) {
 		AIRRequest request = (new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold(), productProperties.getAir_preferred_host()));
 
@@ -161,7 +159,7 @@ public class PricePlanCurrentRollBackActions {
 		} catch(Throwable th) {
 			if((step >= 4) && (productProperties.getCommunity_id() != 0)) {
 				// save rollback
-				new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -4, 2, msisdn, msisdn, null));
+				new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -4, 2, msisdn, msisdn, null));
 
 				if(request.isSuccessfully()) ;
 				else {
@@ -208,10 +206,10 @@ public class PricePlanCurrentRollBackActions {
 					}
 					else {
 						if(request.isSuccessfully()) {
-							new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, 1, 2, msisdn, msisdn, null));
+							new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, 1, 2, msisdn, msisdn, null));
 						}
 						else {
-							new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -1, 2, msisdn, msisdn, null));
+							new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -1, 2, msisdn, msisdn, null));
 						}
 
 						return request.isSuccessfully() ? 1 : -1;					
@@ -219,10 +217,10 @@ public class PricePlanCurrentRollBackActions {
 				}
 				else {
 					if(request.isSuccessfully()) {
-						new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, 2, 2, msisdn, msisdn, null));
+						new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, 2, 2, msisdn, msisdn, null));
 					}
 					else {
-						new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -2, 2, msisdn, msisdn, null));
+						new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -2, 2, msisdn, msisdn, null));
 					}
 
 					return request.isSuccessfully() ? 1 : -1;				
@@ -230,10 +228,10 @@ public class PricePlanCurrentRollBackActions {
 			}
 			else {
 				if(request.isSuccessfully()) {
-					new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, 3, 2, msisdn, msisdn, null));
+					new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, 3, 2, msisdn, msisdn, null));
 				}
 				else {
-					new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -3, 2, msisdn, msisdn, null));
+					new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -3, 2, msisdn, msisdn, null));
 				}
 
 				return request.isSuccessfully() ? 1 : -1;
@@ -241,10 +239,10 @@ public class PricePlanCurrentRollBackActions {
 		}
 		else {
 			if(request.isSuccessfully()) {
-				new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, 4, 2, msisdn, msisdn, null));
+				new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, 4, 2, msisdn, msisdn, null));
 			}
 			else {
-				new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -4, 2, msisdn, msisdn, null));
+				new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -4, 2, msisdn, msisdn, null));
 			}
 
 			return request.isSuccessfully() ? 1 : -1;

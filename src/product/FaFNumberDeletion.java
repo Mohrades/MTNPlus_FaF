@@ -9,8 +9,8 @@ import org.springframework.context.MessageSource;
 
 import connexions.AIRRequest;
 import dao.DAO;
-import dao.queries.FaFReportingDAOJdbc;
-import dao.queries.RollBackDAOJdbc;
+import dao.queries.JdbcFaFReportingDao;
+import dao.queries.JdbcRollBackDao;
 import domain.models.FaFReporting;
 import domain.models.RollBack;
 import domain.models.Subscriber;
@@ -45,7 +45,7 @@ public class FaFNumberDeletion {
 			}
 
 			if(found) {
-				FaFReporting reporting = (new FaFReportingDAOJdbc(dao)).getLastFaFChangeRequestReporting(subscriber.getId(), fafNumber);
+				FaFReporting reporting = (new JdbcFaFReportingDao(dao)).getLastFaFChangeRequestReporting(subscriber.getId(), fafNumber);
 
 				if((reporting == null) || (reporting.isFlag())) {
 					Date CREATED_DATE_TIME = null;
@@ -62,7 +62,7 @@ public class FaFNumberDeletion {
 
 						// remove fafNumber
 				        if(request.updateFaFList(subscriber.getValue(), FaFAction.DELETE, fafList, "eBA")) {
-							(new FaFReportingDAOJdbc(dao)).saveOneFaFReporting(new FaFReporting(0, subscriber.getId(), fafNumber, false, 0, new Date(), originOperatorID)); // reporting
+							(new JdbcFaFReportingDao(dao)).saveOneFaFReporting(new FaFReporting(0, subscriber.getId(), fafNumber, false, 0, new Date(), originOperatorID)); // reporting
 							return new Object [] {0, i18n.getMessage("fafRemovalRequest.successful", new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};				        	
 				        }
 						else {
@@ -70,7 +70,7 @@ public class FaFNumberDeletion {
 								return new Object [] {1, i18n.getMessage("fafRemovalRequest.failed", new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 							}
 							else {
-								new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -1, 5, subscriber.getValue(), fafNumber, null));
+								new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -1, 5, subscriber.getValue(), fafNumber, null));
 								return new Object [] {-1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 							}
 						}

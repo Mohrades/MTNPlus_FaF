@@ -20,7 +20,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import connexions.AIRRequest;
 import dao.DAO;
-import dao.queries.SubscriberDAOJdbc;
+import dao.queries.JdbcSubscriberDao;
 import domain.models.Subscriber;
 import filter.MSISDNValidator;
 import product.FaFManagement;
@@ -270,7 +270,7 @@ public class ExternalRequestController {
 			if((int)(requestStatus[0]) == 0) {
 				Subscriber subscriber = (Subscriber)requestStatus[2];
 
-				if(new SubscriberDAOJdbc(dao).lock(subscriber) == 1) {
+				if(new JdbcSubscriberDao(dao).lock(subscriber) == 1) {
 					// fire the checking of fafChangeRequest charging
 					(new FaFManagement()).setFafChangeRequestChargingEnabled(dao, productProperties, subscriber);
 
@@ -290,7 +290,7 @@ public class ExternalRequestController {
 					}
 
 					// unlock
-					new SubscriberDAOJdbc(dao).unLock(subscriber);
+					new JdbcSubscriberDao(dao).unLock(subscriber);
 
 					return callback(msisdn, (int)requestStatus[0], (String)requestStatus[1]);
 				}

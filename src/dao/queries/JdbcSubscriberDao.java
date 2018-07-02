@@ -11,11 +11,11 @@ import dao.DAO;
 import dao.mapping.SubscriberRowMapper;
 import domain.models.Subscriber;
 
-public class SubscriberDAOJdbc {
+public class JdbcSubscriberDao {
 
 	private DAO dao;
 
-	public SubscriberDAOJdbc(DAO dao) {
+	public JdbcSubscriberDao(DAO dao) {
 		this.dao = dao;
 	}
 

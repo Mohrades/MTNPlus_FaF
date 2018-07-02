@@ -9,11 +9,11 @@ import dao.DAO;
 import dao.mapping.FaFReportingRowMapper;
 import domain.models.FaFReporting;
 
-public class FaFReportingDAOJdbc {
+public class JdbcFaFReportingDao {
 
 	private DAO dao;
 
-	public FaFReportingDAOJdbc(DAO dao) {
+	public JdbcFaFReportingDao(DAO dao) {
 		this.dao = dao;
 	}
 

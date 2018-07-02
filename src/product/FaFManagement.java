@@ -10,8 +10,8 @@ import org.springframework.context.MessageSource;
 
 import connexions.AIRRequest;
 import dao.DAO;
-import dao.queries.FaFReportingDAOJdbc;
-import dao.queries.SubscriberDAOJdbc;
+import dao.queries.JdbcFaFReportingDao;
+import dao.queries.JdbcSubscriberDao;
 import domain.models.FaFReporting;
 import domain.models.Subscriber;
 import util.FafInformation;
@@ -69,7 +69,7 @@ public class FaFManagement {
 	public void setFafChangeRequestChargingEnabled(DAO dao, ProductProperties productProperties, Subscriber subscriber) {
 		// check if fafChangeRequest must be charged
 		if(!subscriber.isFafChangeRequestChargingEnabled()) {
-			List<FaFReporting> reports = (new FaFReportingDAOJdbc(dao)).getFaFReporting(subscriber.getId());
+			List<FaFReporting> reports = (new JdbcFaFReportingDao(dao)).getFaFReporting(subscriber.getId());
 			int count = 0;
 
 			for(FaFReporting faFReporting : reports) {
@@ -77,7 +77,7 @@ public class FaFManagement {
 					count++;
 					if(count >= productProperties.getFafMaxAllowedNumbers()) {
 						subscriber.setFafChangeRequestChargingEnabled(true);
-						(new SubscriberDAOJdbc(dao)).saveFafChargingStatus(subscriber);
+						(new JdbcSubscriberDao(dao)).saveFafChargingStatus(subscriber);
 						break;
 					}
 				}

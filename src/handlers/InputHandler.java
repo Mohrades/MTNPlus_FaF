@@ -20,9 +20,9 @@ import com.google.common.base.Splitter;
 
 import connexions.AIRRequest;
 import dao.DAO;
-import dao.queries.SubscriberDAOJdbc;
-import dao.queries.USSDRequestDAOJdbc;
-import dao.queries.USSDServiceDAOJdbc;
+import dao.queries.JdbcSubscriberDao;
+import dao.queries.JdbcUSSDRequestDao;
+import dao.queries.JdbcUSSDServiceDao;
 import domain.models.Subscriber;
 import domain.models.USSDRequest;
 import domain.models.USSDService;
@@ -58,7 +58,7 @@ public class InputHandler {
 			}
 
 			long sessionId = Long.parseLong(parameters.get("sessionid"));
-			ussd = new USSDRequestDAOJdbc(dao).getOneUSSD(sessionId, parameters.get("msisdn"));
+			ussd = new JdbcUSSDRequestDao(dao).getOneUSSD(sessionId, parameters.get("msisdn"));
 
 			if(ussd == null) {
 				USSDService service = null;
@@ -66,10 +66,10 @@ public class InputHandler {
 				// check if short code is faf portail
 				if(parameters.get("input").trim().startsWith(productProperties.getSc_secondary() + "")) {
 					parameters.put("input", parameters.get("input").trim().replaceFirst(productProperties.getSc_secondary() + "", productProperties.getSc() + "*4"));
-					service = new USSDServiceDAOJdbc(dao).getOneUSSDService(productProperties.getSc_secondary());
+					service = new JdbcUSSDServiceDao(dao).getOneUSSDService(productProperties.getSc_secondary());
 				}
 				else {
-					service = new USSDServiceDAOJdbc(dao).getOneUSSDService(productProperties.getSc());
+					service = new JdbcUSSDServiceDao(dao).getOneUSSDService(productProperties.getSc());
 				}
 
 				Date now = new Date();
@@ -232,7 +232,7 @@ public class InputHandler {
 
 	public void endStep(DAO dao, USSDRequest ussd, Map<String, Object> modele, ProductProperties productProperties, String messageA, String Anumber, String messageB, String Bnumber, String senderName) {
 		if((ussd != null) && (ussd.getId() > 0)) {
-			new USSDRequestDAOJdbc(dao).deleteOneUSSD(ussd.getId());
+			new JdbcUSSDRequestDao(dao).deleteOneUSSD(ussd.getId());
 		}
 
 		modele.put("next", false);
@@ -264,7 +264,7 @@ public class InputHandler {
 			//
 		}
 
-		new USSDRequestDAOJdbc(dao).saveOneUSSD(ussd);
+		new JdbcUSSDRequestDao(dao).saveOneUSSD(ussd);
 
 		modele.put("next", true);
 		modele.put("message", message);
@@ -290,7 +290,7 @@ public class InputHandler {
 		if((int)(requestStatus[0]) == 0) {
 			Subscriber subscriber = (Subscriber)requestStatus[2];
 
-			if(new SubscriberDAOJdbc(dao).lock(subscriber) == 1) {
+			if(new JdbcSubscriberDao(dao).lock(subscriber) == 1) {
 				// fire the checking of fafChangeRequest charging
 				(new FaFManagement()).setFafChangeRequestChargingEnabled(dao, productProperties, subscriber);
 
@@ -305,7 +305,7 @@ public class InputHandler {
 				}
 
 				// unlock
-				new SubscriberDAOJdbc(dao).unLock(subscriber);
+				new JdbcSubscriberDao(dao).unLock(subscriber);
 
 				// notification via sms
 				endStep(dao, ussd, modele, productProperties, (String)requestStatus[1], ((int)requestStatus[0] == 0) ? ussd.getMsisdn() : null, null, null, ((int)requestStatus[0] == 0) ? productProperties.getSms_notifications_header() : null);

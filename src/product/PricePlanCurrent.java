@@ -8,8 +8,8 @@ import org.springframework.context.MessageSource;
 
 import connexions.AIRRequest;
 import dao.DAO;
-import dao.queries.FaFReportingDAOJdbc;
-import dao.queries.SubscriberDAOJdbc;
+import dao.queries.JdbcFaFReportingDao;
+import dao.queries.JdbcSubscriberDao;
 import domain.models.FaFReporting;
 import domain.models.Subscriber;
 import util.BalanceAndDate;
@@ -30,7 +30,7 @@ public class PricePlanCurrent {
 	}
 
 	public Object[] getStatus(ProductProperties productProperties, MessageSource i18n, DAO dao, String msisdn, int language, boolean bonus) {
-		Subscriber subscriber = new SubscriberDAOJdbc(dao).getOneSubscriber(msisdn);
+		Subscriber subscriber = new JdbcSubscriberDao(dao).getOneSubscriber(msisdn);
 		int statusCode = -1; // default
 
 		if(subscriber == null) {
@@ -44,13 +44,13 @@ public class PricePlanCurrent {
 				// be sure the initialization of the subscriber status and his previous attached fafNumbers is done with AIR availability
 				if(request.isSuccessfully()) {
 					subscriber = new Subscriber(0, msisdn, (statusCode == 0) ? true : false, (fafNumbers.size() >= productProperties.getFafMaxAllowedNumbers()) ? true : false, null, false);
-					boolean registered = (new SubscriberDAOJdbc(dao).saveOneSubscriber(subscriber) == 1) ? true : false;
+					boolean registered = (new JdbcSubscriberDao(dao).saveOneSubscriber(subscriber) == 1) ? true : false;
 
 					if(registered) {
-						subscriber = (new SubscriberDAOJdbc(dao)).getOneSubscriber(msisdn);
+						subscriber = (new JdbcSubscriberDao(dao)).getOneSubscriber(msisdn);
 						// log the former fafNumber Status (formerly)
 						for(FafInformation fafInformation : fafNumbers) {
-							(new FaFReportingDAOJdbc(dao)).saveOneFaFReporting(new FaFReporting(0, subscriber.getId(), fafInformation.getFafNumber(), true, 0, null, "eBA")); // reporting
+							(new JdbcFaFReportingDao(dao)).saveOneFaFReporting(new FaFReporting(0, subscriber.getId(), fafInformation.getFafNumber(), true, 0, null, "eBA")); // reporting
 						}
 					}
 					else {
@@ -90,24 +90,40 @@ public class PricePlanCurrent {
 	}
 
 	public Object[] getBonusSMS(ProductProperties productProperties, String msisdn, int language) {
+		if((productProperties.getBonus_sms_onNet_da() == 0) && (productProperties.getBonus_sms_offNet_da() == 0)) return null;
+
 		long count = -1;
 		String expires = null;
 
 		try {
 			AIRRequest request = new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold(), productProperties.getAir_preferred_host());
+			HashSet<BalanceAndDate> balancesBonusSms = null;
 
-			BalanceAndDate balanceBonusSmsOnNet = (productProperties.getBonus_sms_onNet_da() > 0) ? request.getBalanceAndDate(msisdn, productProperties.getBonus_sms_onNet_da()) : null;
-			BalanceAndDate balanceBonusSmsOffNet = (productProperties.getBonus_sms_offNet_da() > 0) ? request.getBalanceAndDate(msisdn, productProperties.getBonus_sms_offNet_da()) : null;
+			if((productProperties.getBonus_sms_onNet_da() > 0) && (productProperties.getBonus_sms_offNet_da() > 0)) balancesBonusSms = request.getDedicatedAccounts(msisdn, new int[][] {{productProperties.getBonus_sms_onNet_da(), productProperties.getBonus_sms_onNet_da()}, {productProperties.getBonus_sms_offNet_da(), productProperties.getBonus_sms_offNet_da()}});
+			else if(productProperties.getBonus_sms_onNet_da() > 0) balancesBonusSms = request.getDedicatedAccounts(msisdn, new int[][] {{productProperties.getBonus_sms_onNet_da(), productProperties.getBonus_sms_onNet_da()}});
+			else if(productProperties.getBonus_sms_offNet_da() > 0) balancesBonusSms = request.getDedicatedAccounts(msisdn, new int[][] {{productProperties.getBonus_sms_offNet_da(), productProperties.getBonus_sms_offNet_da()}});
 
-			if(balanceBonusSmsOnNet != null) {
-				count += ((productProperties.getBonus_sms_onNet_fees() * productProperties.getBonus_sms_threshold()) - balanceBonusSmsOnNet.getAccountValue()) / (productProperties.getBonus_sms_onNet_fees() * 100);
-			}
-			if(balanceBonusSmsOffNet != null) {
-				count += ((productProperties.getBonus_sms_offNet_fees() * productProperties.getBonus_sms_threshold()) - balanceBonusSmsOffNet.getAccountValue()) / (productProperties.getBonus_sms_offNet_fees() * 100);
-			}
+			if((balancesBonusSms != null) && (!balancesBonusSms.isEmpty())) {
+				BalanceAndDate balanceBonusSmsOnNet = null;
+				BalanceAndDate balanceBonusSmsOffNet = null;
 
-			if(count >= 0) {
-				expires = (language == 2) ? (new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm")).format(balanceBonusSmsOnNet.getExpiryDate()) : (new SimpleDateFormat("dd/MM/yyyy 'a' HH'H'mm")).format(balanceBonusSmsOffNet.getExpiryDate());
+				for(BalanceAndDate balanceAndDate : balancesBonusSms) {
+					if((balanceAndDate.getAccountID() > 0) && (balanceAndDate.getAccountID() == productProperties.getBonus_sms_onNet_da())) balanceBonusSmsOnNet = balanceAndDate;
+					else if((balanceAndDate.getAccountID() > 0) && (balanceAndDate.getAccountID() == productProperties.getBonus_sms_offNet_da())) balanceBonusSmsOffNet = balanceAndDate;
+				}
+
+				if(balanceBonusSmsOnNet != null) {
+					if(count < 0) count = 0;
+					count += ((productProperties.getBonus_sms_onNet_fees() * productProperties.getBonus_sms_threshold()) - balanceBonusSmsOnNet.getAccountValue()) / productProperties.getBonus_sms_onNet_fees();
+				}
+				if(balanceBonusSmsOffNet != null) {
+					if(count < 0) count = 0;
+					count += ((productProperties.getBonus_sms_offNet_fees() * productProperties.getBonus_sms_threshold()) - balanceBonusSmsOffNet.getAccountValue()) / productProperties.getBonus_sms_offNet_fees();
+				}
+
+				if(count >= 0) {
+					expires = (language == 2) ? (new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm")).format(balanceBonusSmsOnNet.getExpiryDate()) : (new SimpleDateFormat("dd/MM/yyyy 'a' HH'H'mm")).format(balanceBonusSmsOffNet.getExpiryDate());
+				}
 			}
 
 		} catch(Throwable th) {

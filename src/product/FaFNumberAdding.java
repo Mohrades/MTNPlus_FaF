@@ -9,8 +9,8 @@ import org.springframework.context.MessageSource;
 
 import connexions.AIRRequest;
 import dao.DAO;
-import dao.queries.FaFReportingDAOJdbc;
-import dao.queries.RollBackDAOJdbc;
+import dao.queries.JdbcFaFReportingDao;
+import dao.queries.JdbcRollBackDao;
 import domain.models.FaFReporting;
 import domain.models.RollBack;
 import domain.models.Subscriber;
@@ -77,7 +77,7 @@ public class FaFNumberAdding {
 						// add fafNumber
 				        if(request.updateFaFList(subscriber.getValue(), FaFAction.ADD, fafList, "eBA")) {
 				        	Date fafChangeRequestDate = new Date();
-							(new FaFReportingDAOJdbc(dao)).saveOneFaFReporting(new FaFReporting(0, subscriber.getId(), fafNumber, true, charged ? productProperties.getFaf_chargingAmount() : 0, fafChangeRequestDate, originOperatorID)); // reporting
+							(new JdbcFaFReportingDao(dao)).saveOneFaFReporting(new FaFReporting(0, subscriber.getId(), fafNumber, true, charged ? productProperties.getFaf_chargingAmount() : 0, fafChangeRequestDate, originOperatorID)); // reporting
 							fafChangeRequestDate.setDate(fafChangeRequestDate.getDate() + productProperties.getFafChangeRequestAllowedDays());
 							return new Object [] {0, i18n.getMessage("fafAddingRequest.successful", new Object[] {fafNumber, (language == 2) ? (new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm")).format(fafChangeRequestDate) : (new SimpleDateFormat("dd/MM/yyyy 'a' HH:mm")).format(fafChangeRequestDate)}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 				        }
@@ -93,17 +93,17 @@ public class FaFNumberAdding {
 								}
 								else {
 									if(request.isSuccessfully()) {
-										new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, 101, 3, subscriber.getValue(), fafNumber, null));
+										new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, 101, 3, subscriber.getValue(), fafNumber, null));
 									}
 									else {
-										new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -101, 3, subscriber.getValue(), fafNumber, null));
+										new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -101, 3, subscriber.getValue(), fafNumber, null));
 									}
 								}
 
 								return new Object [] {-1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 							}
 							else {
-								new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -2, 3, subscriber.getValue(), fafNumber, null));
+								new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -2, 3, subscriber.getValue(), fafNumber, null));
 								return new Object [] {-1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 							}
 						}
@@ -113,7 +113,7 @@ public class FaFNumberAdding {
 							return new Object [] {1, i18n.getMessage("balance.insufficient", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 						}
 						else {
-							new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -1, 3, subscriber.getValue(), fafNumber, null));
+							new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -1, 3, subscriber.getValue(), fafNumber, null));
 							return new Object [] {-1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 						}
 					}

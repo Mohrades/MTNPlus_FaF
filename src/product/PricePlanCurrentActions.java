@@ -12,7 +12,7 @@ import org.springframework.context.MessageSource;
 
 import connexions.AIRRequest;
 import dao.DAO;
-import dao.queries.RollBackDAOJdbc;
+import dao.queries.JdbcRollBackDao;
 import domain.models.RollBack;
 import util.AccountDetails;
 import util.BalanceAndDate;
@@ -134,7 +134,7 @@ public class PricePlanCurrentActions {
 					} catch(Throwable th) {
 						if(productProperties.getCommunity_id() != 0) {
 							// save rollback
-							new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -4, 1, msisdn, msisdn, null));
+							new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -4, 1, msisdn, msisdn, null));
 
 							if(request.isSuccessfully()) ;
 							else {
@@ -171,7 +171,7 @@ public class PricePlanCurrentActions {
 							}
 							else {
 								// save rollback
-								new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, request.isSuccessfully() ? 5 : -5, 1, msisdn, msisdn, null));
+								new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, request.isSuccessfully() ? 5 : -5, 1, msisdn, msisdn, null));
 							}
 						}
 
@@ -204,14 +204,14 @@ public class PricePlanCurrentActions {
 									if(request.deleteOffer(msisdn, offerID, "eBA", true));
 									else {
 										// save rollback
-										new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, request.isSuccessfully() ? 7 : -7, 1, msisdn, msisdn, null));
+										new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, request.isSuccessfully() ? 7 : -7, 1, msisdn, msisdn, null));
 									}
 								}
 							}
 						}
 						else {
 							// save rollback
-							new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, request.isSuccessfully() ? 6 : -6, 1, msisdn, msisdn, null));
+							new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, request.isSuccessfully() ? 6 : -6, 1, msisdn, msisdn, null));
 						}
 
 						return 0;
@@ -221,7 +221,7 @@ public class PricePlanCurrentActions {
 							return new PricePlanCurrentRollBackActions().activation(3, productProperties, dao, msisdn, charged);
 						}
 						else {
-							new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -4, 1, msisdn, msisdn, null));
+							new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -4, 1, msisdn, msisdn, null));
 							return -1;
 						}						
 					}
@@ -231,7 +231,7 @@ public class PricePlanCurrentActions {
 						return new PricePlanCurrentRollBackActions().activation(2, productProperties, dao, msisdn, charged);
 					}
 					else {
-						new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -3, 1, msisdn, msisdn, null));
+						new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -3, 1, msisdn, msisdn, null));
 						return -1;
 					}
 				}
@@ -241,7 +241,7 @@ public class PricePlanCurrentActions {
 					return new PricePlanCurrentRollBackActions().activation(1, productProperties, dao, msisdn, charged);
 				}
 				else {
-					new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -2, 1, msisdn, msisdn, null));
+					new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -2, 1, msisdn, msisdn, null));
 					return -1;
 				}
 			}
@@ -251,13 +251,12 @@ public class PricePlanCurrentActions {
 				return 1;
 			}
 			else {
-				new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -1, 1, msisdn, msisdn, null));
+				new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -1, 1, msisdn, msisdn, null));
 				return -1;
 			}
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public int deactivation(ProductProperties productProperties, DAO dao, String msisdn, boolean charged) {
 		AIRRequest request = new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold(), productProperties.getAir_preferred_host());
 		if(charged && productProperties.getActivation_chargingAmount() == 0) charged = false;
@@ -304,7 +303,7 @@ public class PricePlanCurrentActions {
 					} catch(Throwable th) {
 						if(productProperties.getCommunity_id() != 0) {
 							// save rollback
-							new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -4, 2, msisdn, msisdn, null));
+							new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -4, 2, msisdn, msisdn, null));
 
 							if(request.isSuccessfully()) ;
 							else {
@@ -324,7 +323,7 @@ public class PricePlanCurrentActions {
 							return new PricePlanCurrentRollBackActions().deactivation(3, productProperties, dao, msisdn, charged);
 						}
 						else {
-							new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -4, 2, msisdn, msisdn, null));
+							new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -4, 2, msisdn, msisdn, null));
 							return -1;
 						}
 					}
@@ -334,7 +333,7 @@ public class PricePlanCurrentActions {
 						return new PricePlanCurrentRollBackActions().deactivation(2, productProperties, dao, msisdn, charged);
 					}
 					else {
-						new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -3, 2, msisdn, msisdn, null));
+						new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -3, 2, msisdn, msisdn, null));
 						return -1;
 					}
 				}
@@ -344,7 +343,7 @@ public class PricePlanCurrentActions {
 					return new PricePlanCurrentRollBackActions().deactivation(1, productProperties, dao, msisdn, charged);
 				}
 				else {
-					new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -2, 2, msisdn, msisdn, null));
+					new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -2, 2, msisdn, msisdn, null));
 					return -1;
 				}
 
@@ -355,7 +354,7 @@ public class PricePlanCurrentActions {
 				return 1;
 			}
 			else {
-				new RollBackDAOJdbc(dao).saveOneRollBack(new RollBack(0, -1, 2, msisdn, msisdn, null));
+				new JdbcRollBackDao(dao).saveOneRollBack(new RollBack(0, -1, 2, msisdn, msisdn, null));
 				return -1;
 			}
 		}
