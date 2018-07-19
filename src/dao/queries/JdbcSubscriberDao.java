@@ -29,6 +29,9 @@ public class JdbcSubscriberDao {
 				getJdbcTemplate().update("INSERT INTO MTN_PLUS_MSISDN_EBA (MSISDN,FLAG,FAF_CR_CHARGING_ENABLED,LOCKED) VALUES('" + subscriber.getValue() + "'," + (subscriber.isFlag() ? 1 : 0) + "," + (subscriber.isFafChangeRequestChargingEnabled() ? 1 : 0) + "," + (subscriber.isLocked() ? 1 : 0) + ")");
 				return 1;
 			}
+			else if(subscriber.getId() < 0) {
+				return getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET FLAG = " + (subscriber.isFlag() ? 1 : 0) + " WHERE ((ID = " + (-subscriber.getId()) + ") AND (FLAG = " + (subscriber.isFlag() ? 0 : 1) + ") AND (LOCKED = 0))");
+			}
 			else if(subscriber.getId() > 0) {
 				return getJdbcTemplate().update("UPDATE MTN_PLUS_MSISDN_EBA SET FLAG = " + (subscriber.isFlag() ? 1 : 0) + ", LOCKED = 1 WHERE ((ID = " + subscriber.getId() + ") AND (FLAG = " + (subscriber.isFlag() ? 0 : 1) + ") AND (LOCKED = 0))");
 			}

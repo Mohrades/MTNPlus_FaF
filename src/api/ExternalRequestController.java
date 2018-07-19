@@ -143,7 +143,7 @@ public class ExternalRequestController {
 			return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, Locale.FRENCH));
 		}
 
-		if(!supports(productProperties, fafNumberNew)) {
+		if(!supports(productProperties, fafNumberNew, 8)) {
 			return callback(msisdn, -1, i18n.getMessage("msisdn.required", null, null, Locale.FRENCH));
 		}
 
@@ -158,7 +158,7 @@ public class ExternalRequestController {
 			return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, Locale.FRENCH));
 		}
 
-		if(!supports(productProperties, fafNumberOld)) {
+		if(!supports(productProperties, fafNumberOld, 0)) {
 			return callback(msisdn, -1, i18n.getMessage("msisdn.required", null, null, Locale.FRENCH));
 		}
 
@@ -174,7 +174,7 @@ public class ExternalRequestController {
 			return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, Locale.FRENCH));
 		}
 
-		if((!supports(productProperties, fafNumberNew)) || (!supports(productProperties, fafNumberOld))) {
+		if((!supports(productProperties, fafNumberNew, 8)) || (!supports(productProperties, fafNumberOld, 0))) {
 			return callback(msisdn, -1, i18n.getMessage("msisdn.required", null, null, Locale.FRENCH));
 		}
 
@@ -243,13 +243,19 @@ public class ExternalRequestController {
 		}
 	}
 
-	public boolean supports(ProductProperties productProperties, String phoneNumber) {
+	public boolean supports(ProductProperties productProperties, String phoneNumber, int npi) {
 	    if ((phoneNumber == null) || ("".equals(phoneNumber))) {
 	      return false;
 	    }
 
 	    if(phoneNumber.matches("[0-9]*")) {
-	    	if(productProperties.getMsisdn_length() == phoneNumber.length()) {
+	    	if((npi == 8) && (productProperties.getMsisdn_length() == phoneNumber.length())) {
+	    		return true;
+	    	}
+	    	else if((npi == 1) && ((productProperties.getMcc() + "").length() + productProperties.getMsisdn_length() == phoneNumber.length())) {
+	    		return true;
+	    	}
+	    	else if(npi == 0) {
 	    		return true;
 	    	}
 

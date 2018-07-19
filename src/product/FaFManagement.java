@@ -38,18 +38,23 @@ public class FaFManagement {
 		AIRRequest request = new AIRRequest(productProperties.getAir_hosts(), productProperties.getAir_io_sleep(), productProperties.getAir_io_timeout(), productProperties.getAir_io_threshold(), productProperties.getAir_preferred_host());
 		HashSet<FafInformation> fafNumbers = request.getFaFList(msisdn, productProperties.getFafRequestedOwner()).getList();
 
-		LinkedList<Long> fafNumbers_copy = new LinkedList<Long>();
-		for(FafInformation fafInformation : fafNumbers) {
-			fafNumbers_copy.add(Long.parseLong(fafInformation.getFafNumber()));
-		}
-
-		Collections.sort (fafNumbers_copy) ;
-		// Collections.sort (fafNumbers_copy, Collections.reverseOrder()) ;
-
-		if(fafNumbers_copy.isEmpty()) {
-			return new Object [] {1, i18n.getMessage("fafNumbers.empty", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+		if(!request.isSuccessfully()) {
+			return new Object [] {-1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 		}
 		else {
+			if((fafNumbers == null) || (fafNumbers.isEmpty())) {
+				return new Object [] {1, i18n.getMessage("fafNumbers.empty", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+			}
+
+			LinkedList<Long> fafNumbers_copy = new LinkedList<Long>();
+
+			for(FafInformation fafInformation : fafNumbers) {
+				fafNumbers_copy.add(Long.parseLong(fafInformation.getFafNumber()));
+			}
+
+			Collections.sort (fafNumbers_copy) ;
+			// Collections.sort (fafNumbers_copy, Collections.reverseOrder()) ;
+
 			String fafNumbersList = "";
 
 			int index = 0;
@@ -62,7 +67,7 @@ public class FaFManagement {
 				}
 			}
 
-			return new Object [] {1, i18n.getMessage("fafNumbers.list", new Object[] {fafNumbersList}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
+			return new Object [] {0, i18n.getMessage("fafNumbers.list", new Object[] {fafNumbersList}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 		}
 	}
 

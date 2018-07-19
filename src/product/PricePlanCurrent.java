@@ -65,14 +65,32 @@ public class PricePlanCurrent {
 		else {
 			 if(subscriber.isLocked()) statusCode = -1;
 			 else {
-				 if(subscriber.isFlag()) {
+				 if(subscriber.getLast_update_time() == null) { // update new initial status
 					 statusCode = new PricePlanCurrentActions().isActivated(productProperties, dao, msisdn);
 
-					 if(statusCode == 0) statusCode = 0; // success
-					 else if(statusCode == 1) statusCode = -1; // anormal
+					 if(statusCode >= 0) {
+						 if(((statusCode == 0) && (!subscriber.isFlag())) || ((statusCode == 1) && (subscriber.isFlag()))) {
+							 subscriber.setFlag((statusCode == 0) ? true : false);
+
+							 subscriber.setId(-subscriber.getId()); // negative id to update database
+							 boolean registered = (new JdbcSubscriberDao(dao).saveOneSubscriber(subscriber) == 1) ? true : false;
+							 subscriber.setId(-subscriber.getId()); // to release negative id
+
+							 if(!registered) statusCode = -1; // check databse is actually updated
+						 }
+					 }
 					 else if(statusCode == -1) statusCode = -1; // erreur AIR
 				 }
-				 else statusCode = 1;
+				 else {
+					 if(subscriber.isFlag()) {
+						 statusCode = new PricePlanCurrentActions().isActivated(productProperties, dao, msisdn);
+
+						 if(statusCode == 0) statusCode = 0; // success
+						 else if(statusCode == 1) statusCode = -1; // anormal
+						 else if(statusCode == -1) statusCode = -1; // erreur AIR
+					 }
+					 else statusCode = 1;
+				 }
 			 }
 		}
 
