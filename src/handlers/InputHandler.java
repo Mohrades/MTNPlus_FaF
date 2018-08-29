@@ -17,6 +17,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.context.MessageSource;
 
 import com.google.common.base.Splitter;
+import com.tools.DefaultPricePlan;
+import com.tools.SMPPConnector;
 
 import connexions.AIRRequest;
 import dao.DAO;
@@ -33,8 +35,6 @@ import product.PricePlanCurrent;
 import product.PricePlanCurrentActions;
 import product.ProductProperties;
 import product.USSDMenu;
-import tools.DefaultPricePlan;
-import tools.SMPPConnector;
 import util.AccountDetails;
 import util.FafInformation;
 
