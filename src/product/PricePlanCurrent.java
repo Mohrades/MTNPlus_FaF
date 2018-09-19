@@ -100,7 +100,7 @@ public class PricePlanCurrent {
 			Object[] bonusSMS = getBonusSMS(productProperties, msisdn, language);
 
 			if(bonusSMS == null) message = i18n.getMessage("status.successful", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH);
-			else message = i18n.getMessage("status.successful_with_bonus", new Object[] {(int)(bonusSMS[0]), (String)(bonusSMS[1])}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH);
+			else message = i18n.getMessage("status.successful_with_bonus", new Object[] {(((int)(bonusSMS[0])) + ""), (String)(bonusSMS[1])}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH);
 		}
 		else message = i18n.getMessage((statusCode == 0) ? "status.successful" : (statusCode == 1) ? "status.failed" : "service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH);
 
