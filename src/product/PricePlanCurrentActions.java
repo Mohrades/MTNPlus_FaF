@@ -147,7 +147,7 @@ public class PricePlanCurrentActions {
 					}
 
 					if((productProperties.getCommunity_id() == 0) || (communityInformationNew == null) || (communityInformationNew.length == 0) || (request.updateCommunityList(msisdn, communityInformationCurrent, communityInformationNew, "eBA"))) {
-						// ADVANTAGES
+						// Welcome gift : ADVANTAGES
 						if(advantages) {
 							Date expires = new Date();
 							expires.setSeconds(59);expires.setMinutes(59);expires.setHours(23);
@@ -155,13 +155,13 @@ public class PricePlanCurrentActions {
 							balances = new HashSet<BalanceAndDate>();
 							// sms advantages
 							if(productProperties.getAdvantages_sms_value() != 0) {
-								if(productProperties.getAdvantages_sms_da() == 0) balances.add(new BalanceAndDate(0, productProperties.getAdvantages_sms_value(), expires));
+								if(productProperties.getAdvantages_sms_da() == 0) balances.add(new BalanceAndDate(0, productProperties.getAdvantages_sms_value(), null));
 								else balances.add(new DedicatedAccount(productProperties.getAdvantages_sms_da(), productProperties.getAdvantages_sms_value(), expires));
 							}
 
 							// data advantages
 							if(productProperties.getAdvantages_data_value() != 0) {
-								if(productProperties.getAdvantages_data_da() == 0) balances.add(new BalanceAndDate(0, productProperties.getAdvantages_data_value(), expires));
+								if(productProperties.getAdvantages_data_da() == 0) balances.add(new BalanceAndDate(0, productProperties.getAdvantages_data_value(), null));
 								else balances.add(new DedicatedAccount(productProperties.getAdvantages_data_da(), productProperties.getAdvantages_data_value(), expires));
 							}
 
