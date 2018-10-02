@@ -317,6 +317,17 @@ public class ExternalRequestController {
 			Object [] requestStatus = (new PricePlanCurrent()).getStatus(productProperties, i18n, dao, msisdn, language, false);
 
 			if((int)(requestStatus[0]) == 0) {
+				// check Bnumber is allowed
+				if(action != 3) {
+					if((new MSISDNValidator()).isFiltered(dao, productProperties, ((((productProperties.getMcc() + "").length() + productProperties.getMsisdn_length()) == (fafNumberNew.length())) ? fafNumberNew : (productProperties.getMcc() + "" + fafNumberNew)), "B")) {
+						// fafNumber is allowed
+					}
+					// fafaNumber is not allowed
+					else {
+						return callback(msisdn, -1, i18n.getMessage("faf.number.disabled", new Object[] {fafNumberNew}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+					}
+				}
+
 				Subscriber subscriber = (Subscriber)requestStatus[2];
 
 				if(new JdbcSubscriberDao(dao).lock(subscriber) == 1) {
@@ -347,7 +358,9 @@ public class ExternalRequestController {
 					return callback(msisdn, -1, i18n.getMessage("service.internal.error", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 				}
 			}
-			return callback(msisdn, -1, i18n.getMessage("menu.disabled", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+			else {
+				return callback(msisdn, -1, i18n.getMessage("menu.disabled", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+			}
 		}
 		else {
 			return callback(msisdn, -1, i18n.getMessage("menu.disabled", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));

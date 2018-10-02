@@ -294,6 +294,17 @@ public class InputHandler {
 		Object [] requestStatus = (new PricePlanCurrent()).getStatus(productProperties, i18n, dao, ussd.getMsisdn(), language, false);
 
 		if((int)(requestStatus[0]) == 0) {
+			// check Bnumber is allowed
+			if(action != 3) {
+				if((new MSISDNValidator()).isFiltered(dao, productProperties, ((((productProperties.getMcc() + "").length() + productProperties.getMsisdn_length()) == (fafNumberNew.length())) ? fafNumberNew : (productProperties.getMcc() + "" + fafNumberNew)), "B")) {
+					// fafNumber is allowed
+				}
+				else {
+					// fafNumber is not allowed
+					endStep(dao, ussd, modele, productProperties, i18n.getMessage("faf.number.disabled", new Object[] {fafNumberNew}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH), null, null, null, null);
+				}
+			}
+
 			Subscriber subscriber = (Subscriber)requestStatus[2];
 
 			if(new JdbcSubscriberDao(dao).lock(subscriber) == 1) {

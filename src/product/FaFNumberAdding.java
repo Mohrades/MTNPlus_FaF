@@ -51,12 +51,12 @@ public class FaFNumberAdding {
 						return new Object [] {1, i18n.getMessage("fafNumberFound", new Object[] {fafNumber}, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 					}
 					// check offnet fafNumber
-					if((new MSISDNValidator()).onNet(productProperties, productProperties.getMcc() + fafInformation.getFafNumber()));
+					if((new MSISDNValidator()).onNet(productProperties, ((((productProperties.getMcc() + "").length() + productProperties.getMsisdn_length()) == (fafInformation.getFafNumber().length())) ? fafInformation.getFafNumber() : (productProperties.getMcc() + fafInformation.getFafNumber()))));
 					else offnet_count++;
 				}
 
 				// check offnet fafNumber limit reached
-				if((offnet_count > productProperties.getFafMaxAllowedOffNetNumbers()) || ((!(new MSISDNValidator()).onNet(productProperties, productProperties.getMcc() + fafNumber)) && (offnet_count >= productProperties.getFafMaxAllowedOffNetNumbers()) && (!replace))) {
+				if((offnet_count > productProperties.getFafMaxAllowedOffNetNumbers()) || ((!(new MSISDNValidator()).onNet(productProperties, ((((productProperties.getMcc() + "").length() + productProperties.getMsisdn_length()) == (fafNumber.length())) ? fafNumber : (productProperties.getMcc() + fafNumber)))) && (offnet_count >= productProperties.getFafMaxAllowedOffNetNumbers()) && (!replace))) {
 					return new Object [] {1, i18n.getMessage("fafMaxAllowedOffNetNumbers.limit.reachedFlag", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH)};
 				}
 				else {
