@@ -150,7 +150,7 @@ public class ExternalRequestController {
 			}
 		}
 		else {
-			return callback(msisdn, -1, i18n.getMessage("menu.disabled", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+			return callback(msisdn, -1, i18n.getMessage("service.disabled", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 		}
 	}
 
@@ -363,7 +363,7 @@ public class ExternalRequestController {
 			}
 		}
 		else {
-			return callback(msisdn, -1, i18n.getMessage("menu.disabled", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
+			return callback(msisdn, -1, i18n.getMessage("service.disabled", null, null, (language == 2) ? Locale.ENGLISH : Locale.FRENCH));
 		}
 	}
 
