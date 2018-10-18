@@ -53,6 +53,8 @@ public interface ProductProperties extends InitializingBean, DisposableBean {
 
 	public byte getMsisdn_length() ;
 
+	public boolean isBonus_reset_required() ;
+
 	public int getBonus_sms_onNet_da() ;
 
 	public long getBonus_sms_onNet_fees() ;

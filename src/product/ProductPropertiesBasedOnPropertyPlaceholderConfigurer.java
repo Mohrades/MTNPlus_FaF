@@ -121,6 +121,8 @@ public class ProductPropertiesBasedOnPropertyPlaceholderConfigurer implements Pr
 	@Value("${air.preferred.host}")
 	private byte air_preferred_host;
 
+	@Value("${bonus.reset.required}")
+	private boolean bonus_reset_required;
 	@Value("${bonus.sms.onNet.da}")
 	private int bonus_sms_onNet_da;
 	@Value("${bonus.sms.onNet.fees}")
@@ -270,6 +272,10 @@ public class ProductPropertiesBasedOnPropertyPlaceholderConfigurer implements Pr
 
 	public byte getMsisdn_length() {
 		return msisdn_length;
+	}
+
+	public boolean isBonus_reset_required() {
+		return bonus_reset_required;
 	}
 
 	public int getBonus_sms_onNet_da() {

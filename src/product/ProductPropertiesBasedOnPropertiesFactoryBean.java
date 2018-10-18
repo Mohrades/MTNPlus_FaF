@@ -119,6 +119,8 @@ public class ProductPropertiesBasedOnPropertiesFactoryBean implements ProductPro
 	@Value("#{appConfig['air.preferred.host']}")
 	private byte air_preferred_host;
 
+	@Value("#{appConfig['bonus.reset.required']}")
+	private boolean bonus_reset_required;
 	@Value("#{appConfig['bonus.sms.onNet.da']}")
 	private int bonus_sms_onNet_da;
 	@Value("#{appConfig['bonus.sms.onNet.fees']}")
@@ -268,6 +270,10 @@ public class ProductPropertiesBasedOnPropertiesFactoryBean implements ProductPro
 
 	public byte getMsisdn_length() {
 		return msisdn_length;
+	}
+
+	public boolean isBonus_reset_required() {
+		return bonus_reset_required;
 	}
 
 	public int getBonus_sms_onNet_da() {

@@ -316,6 +316,11 @@ public class PricePlanCurrentActions {
 					}
 
 					if((productProperties.getCommunity_id() == 0) || (communityInformationNew == null) || (communityInformationCurrent == null) || (communityInformationCurrent.length == 0) ||  (request.updateCommunityList(msisdn, communityInformationCurrent, communityInformationNew, "eBA"))) {
+						// reset bonus DA
+						if(productProperties.isBonus_reset_required()) {
+							(new BonusResettingActions()).execute(msisdn, productProperties);
+						}
+
 						return 0;
 					}
 					else {

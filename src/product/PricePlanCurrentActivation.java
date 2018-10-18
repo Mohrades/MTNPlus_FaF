@@ -58,7 +58,7 @@ public class PricePlanCurrentActivation {
 					int statusCode = productProperties.isDefault_price_plan_deactivated() ? (new DefaultPricePlan()).requestDefaultPricePlanSubscription(productProperties, msisdn, "deactivation", originOperatorID) : 0;
 					// statusCode 1  === l'api n'a pas changé d'état (conditions non remplies, l'abonné est déjà bloqué avec une action en cours, abonné ne possède pas suffisamment d'unités, etc...), abandonner le change request
 					// statusCode 0  === l'api a bien changé d'état, exécuter le change request
-					// statusCode -1 === l'api a generé une exception, logs change request suspended ou mis en pause (step =0)
+					// statusCode -1 === l'api a generé une exception, logs change request suspended ou mis en pause (step = 0)
 
 					if(statusCode == 0) {
 						// statusCode = (new ProductActions()).activation(productProperties, dao, subscriber.getValue(), !((subscriber.getId() == 0) || (subscriber.getLast_update_time() == null)), ((productProperties.isAdvantages_always()) || ((subscriber.getId() == 0) || (subscriber.getLast_update_time() == null))));
