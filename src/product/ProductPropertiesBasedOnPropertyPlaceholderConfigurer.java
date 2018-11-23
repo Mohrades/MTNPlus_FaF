@@ -123,6 +123,14 @@ public class ProductPropertiesBasedOnPropertyPlaceholderConfigurer implements Pr
 
 	@Value("${bonus.reset.required}")
 	private boolean bonus_reset_required;
+	@Value("${billed.sms.counter.accumulator}")
+	private int billed_sms_counter_accumulator;
+	@Value("${billed.sms.amount.accumulator}")
+	private int billed_sms_amount_accumulator;
+	@Value("${billed.services.amount.usageCounterID}")
+	public int billed_services_amount_usageCounterID;
+	@Value("${billed.services.amount.usageCounterID.isMonetary}")
+	private boolean billed_services_amount_usageCounterID_isMonetary;
 	@Value("${bonus.sms.onNet.da}")
 	private int bonus_sms_onNet_da;
 	@Value("${bonus.sms.onNet.fees}")
@@ -276,6 +284,22 @@ public class ProductPropertiesBasedOnPropertyPlaceholderConfigurer implements Pr
 
 	public boolean isBonus_reset_required() {
 		return bonus_reset_required;
+	}
+
+	public int getBilled_sms_counter_accumulator() {
+		return billed_sms_counter_accumulator;
+	}
+
+	public int getBilled_sms_amount_accumulator() {
+		return billed_sms_amount_accumulator;
+	}
+
+	public int getBilled_services_amount_usageCounterID() {
+		return billed_services_amount_usageCounterID;
+	}
+
+	public boolean isBilled_services_amount_usageCounterID_Monetary() {
+		return billed_services_amount_usageCounterID_isMonetary;
 	}
 
 	public int getBonus_sms_onNet_da() {

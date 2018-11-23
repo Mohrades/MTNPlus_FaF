@@ -55,6 +55,14 @@ public interface ProductProperties extends InitializingBean, DisposableBean {
 
 	public boolean isBonus_reset_required() ;
 
+	public int getBilled_sms_counter_accumulator() ;
+
+	public int getBilled_sms_amount_accumulator() ;
+
+	public int getBilled_services_amount_usageCounterID() ;
+
+	public boolean isBilled_services_amount_usageCounterID_Monetary() ;
+
 	public int getBonus_sms_onNet_da() ;
 
 	public long getBonus_sms_onNet_fees() ;
